@@ -57,9 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  /// ------------------------------
-  /// LOGIN CARD UI
-  /// ------------------------------
+  //Login Card UI
   Widget _buildLoginCard(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -90,12 +88,13 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 20),
 
-            /// ROLE SELECTOR (SLIDING BUTTON)
+
+            //Role seletcor (Sliding)
             _roleSelector(),
 
             const SizedBox(height: 25),
 
-            /// EMAIL FIELD
+            //Email Field
             TextFormField(
               controller: emailController,
               keyboardType: TextInputType.emailAddress,
@@ -113,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 14),
 
-            /// PASSWORD FIELD (WITH HIDE/SHOW)
+            //Password field
             TextFormField(
               controller: passwordController,
               obscureText: obscurePassword,
@@ -142,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 22),
 
-            /// SIGN IN BUTTON
+            // SIGN IN BUTTON
             SizedBox(
               width: double.infinity,
               height: 48,
@@ -163,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 15),
 
-            /// REGISTER NAVIGATION
+            // REGISTER NAVIGATION
             GestureDetector(
               onTap: () {
                 Navigator.pushNamed(context, "/register");
@@ -179,9 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  /// ------------------------------
-  /// SLIDE ROLE SELECTOR
-  /// ------------------------------
+ //slide role selector
   Widget _roleSelector() {
     return Container(
       height: 45,
@@ -193,7 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: Stack(
         children: [
-          /// Sliding background
+          // Sliding background
           AnimatedAlign(
             duration: const Duration(milliseconds: 200),
             alignment:
@@ -218,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  /// Role buttons inside selector
+  // Role buttons inside selector
   Widget _roleButton(String role) {
     final isSelected = selectedRole == role;
 
@@ -242,7 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  /// -----------------------------------------------------
+
 
   Widget _buildInfoCard() {
     return Container(
