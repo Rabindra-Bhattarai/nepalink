@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/auth/register_screen.dart'; // <-- new import
 
 class NepalinkApp extends StatelessWidget {
   const NepalinkApp({super.key});
@@ -18,6 +19,7 @@ class NepalinkApp extends StatelessWidget {
       routes: {
         '/splash': (_) => const SplashScreen(),
         '/login': (_) => const LoginScreen(),
+        '/register': (_) => const RegisterScreen(), // <-- added route
       },
     );
   }
