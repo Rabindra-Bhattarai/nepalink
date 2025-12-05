@@ -21,6 +21,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final locationController = TextEditingController();
 
   int experience = 0;
+  int age = 18;
+  final ageController = TextEditingController(text: "18");
+  String selectedGender = "Male";
+
+  bool passwordVisible = false;
+  bool confirmPasswordVisible = false;
 
   void registerUser() {
     if (_formKey.currentState!.validate()) {
@@ -145,20 +151,93 @@ class _RegisterScreenState extends State<RegisterScreen> {
             },
           ),
           const SizedBox(height: 12),
+
+          // Gender Dropdown
+          DropdownButtonFormField<String>(
+            value: selectedGender,
+            items: ["Male", "Female", "Other"]
+                .map((gender) => DropdownMenuItem(
+              value: gender,
+              child: Text(gender),
+            ))
+                .toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedGender = value!;
+              });
+            },
+            decoration: InputDecoration(
+              hintText: "Gender",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Age Stepper
+          TextFormField(
+            controller: ageController,
+            keyboardType: TextInputType.number,
+            validator: (value) => value!.isEmpty ? "Enter age" : null,
+            onChanged: (value) {
+              setState(() {
+                age = int.tryParse(value) ?? 18;
+              });
+            },
+            decoration: InputDecoration(
+              hintText: "Age",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              suffixIcon: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.remove),
+                    onPressed: () {
+                      setState(() {
+                        if (age > 1) age--;
+                        ageController.text = age.toString();
+                      });
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      setState(() {
+                        age++;
+                        ageController.text = age.toString();
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
           if (selectedRole == "Member") ...[
             AppTextField(
               controller: extraController,
               hint: "Parent’s Name",
-              validator: (value) => value!.isEmpty ? "Enter parent name" : null,
+              validator: (value) =>
+              value!.isEmpty ? "Enter parent name" : null,
             ),
             const SizedBox(height: 12),
             AppTextField(
               controller: locationController,
               hint: "Parent Location",
-              validator: (value) => value!.isEmpty ? "Enter parent location" : null,
+              validator: (value) =>
+              value!.isEmpty ? "Enter parent location" : null,
             ),
             const SizedBox(height: 12),
           ] else ...[
+            // Caregiver experience stepper
             TextFormField(
               controller: extraController,
               keyboardType: TextInputType.number,
@@ -174,8 +253,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 14),
+                contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                 suffixIcon: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -203,25 +282,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             const SizedBox(height: 12),
           ],
-          AppTextField(
+
+          // Password Field
+          TextFormField(
             controller: passwordController,
-            hint: "Password",
-            isPassword: true,
+            obscureText: !passwordVisible,
             validator: (value) {
               if (value!.isEmpty) return "Enter password";
               if (value.length < 6) return "Password too short";
               return null;
             },
+            decoration: InputDecoration(
+              hintText: "Password",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  passwordVisible ? Icons.visibility : Icons.visibility_off,
+                ),
+                onPressed: () {
+                  setState(() {
+                    passwordVisible = !passwordVisible;
+                  });
+                },
+              ),
+            ),
           ),
           const SizedBox(height: 12),
-          AppTextField(
+
+          // Confirm Password Field
+          TextFormField(
             controller: confirmPasswordController,
-            hint: "Confirm Password",
-            isPassword: true,
+            obscureText: !confirmPasswordVisible,
             validator: (value) {
-              if (value != passwordController.text) return "Passwords do not match";
+              if (value != passwordController.text)
+                return "Passwords do not match";
               return null;
             },
+            decoration: InputDecoration(
+              hintText: "Confirm Password",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  confirmPasswordVisible
+                      ? Icons.visibility
+                      : Icons.visibility_off,
+                ),
+                onPressed: () {
+                  setState(() {
+                    confirmPasswordVisible = !confirmPasswordVisible;
+                  });
+                },
+              ),
+            ),
           ),
           const SizedBox(height: 20),
           AppButton(
