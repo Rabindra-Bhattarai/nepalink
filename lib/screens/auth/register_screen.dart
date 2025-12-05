@@ -10,20 +10,20 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  String selectedRole = "Member"; // default role
+  String selectedRole = "Member";
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers
   final fullNameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
-  final extraController = TextEditingController(); // experience / parent name
-  final locationController = TextEditingController(); // parent location
+  final extraController = TextEditingController();
+  final locationController = TextEditingController();
+
+  int experience = 0;
 
   void registerUser() {
     if (_formKey.currentState!.validate()) {
-      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("$selectedRole registered successfully!"),
@@ -31,7 +31,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       );
 
-      // Navigate to LoginScreen after short delay
       Future.delayed(const Duration(milliseconds: 500), () {
         Navigator.pushReplacementNamed(context, '/login');
       });
@@ -59,7 +58,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // Info card at top
   Widget _buildInfoCard() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -91,7 +89,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // Role selector (Member / Caregiver)
   Widget _buildRoleSelector() {
     return Row(
       children: [
@@ -127,7 +124,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // Registration form
   Widget _buildForm() {
     return Form(
       key: _formKey,
@@ -149,7 +145,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             },
           ),
           const SizedBox(height: 12),
-          // Conditional fields for Member or Caregiver
           if (selectedRole == "Member") ...[
             AppTextField(
               controller: extraController,
@@ -164,10 +159,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             const SizedBox(height: 12),
           ] else ...[
-            AppTextField(
+            TextFormField(
               controller: extraController,
-              hint: "Years of Experience",
-              validator: (value) => value!.isEmpty ? "Enter experience" : null,
+              keyboardType: TextInputType.number,
+              validator: (value) =>
+              value!.isEmpty ? "Enter experience" : null,
+              onChanged: (value) {
+                setState(() {
+                  experience = int.tryParse(value) ?? 0;
+                });
+              },
+              decoration: InputDecoration(
+                hintText: "Years of Experience",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 14),
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove),
+                      onPressed: () {
+                        setState(() {
+                          if (experience > 0) experience--;
+                          extraController.text = experience.toString();
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () {
+                        setState(() {
+                          experience++;
+                          extraController.text = experience.toString();
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 12),
           ],

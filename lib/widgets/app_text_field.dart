@@ -5,6 +5,8 @@ class AppTextField extends StatelessWidget {
   final String hint;
   final bool isPassword;
   final String? Function(String?)? validator;
+  final Function(String)? onChanged;
+  final TextInputType? keyboardType; // add this
 
   const AppTextField({
     super.key,
@@ -12,6 +14,8 @@ class AppTextField extends StatelessWidget {
     required this.hint,
     this.isPassword = false,
     this.validator,
+    this.onChanged,
+    this.keyboardType, // add this
   });
 
   @override
@@ -20,15 +24,14 @@ class AppTextField extends StatelessWidget {
       controller: controller,
       obscureText: isPassword,
       validator: validator,
+      onChanged: onChanged,
+      keyboardType: keyboardType, // use it here
       decoration: InputDecoration(
         hintText: hint,
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(12),
         ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       ),
     );
   }
