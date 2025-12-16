@@ -25,9 +25,9 @@ class _LoginScreenState extends State<LoginScreen> {
           backgroundColor: Colors.green,
         ),
       );
-      // Navigate to Home Screen after short delay
-      Future.delayed(const Duration(milliseconds: 500), () {
-        Navigator.pushReplacementNamed(context, '/home');
+      // Navigate to Dashboard Screen after short delay
+      Future.delayed(const Duration(milliseconds: 100), () {
+        Navigator.pushReplacementNamed(context, 'memberDashboard');
       });
 
     }
