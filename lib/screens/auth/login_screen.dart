@@ -11,10 +11,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  bool obscurePassword = true;               // show/hide password
-  String selectedRole = "Member";            // default selected role
+  bool obscurePassword = true; // show/hide password
+  String selectedRole = "Member"; // default selected role
 
-  final _formKey = GlobalKey<FormState>();   // for form validation
+  final _formKey = GlobalKey<FormState>(); // for form validation
 
   void loginUser() {
     if (_formKey.currentState!.validate()) {
@@ -27,9 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       // Navigate to Dashboard Screen after short delay
       Future.delayed(const Duration(milliseconds: 100), () {
-        Navigator.pushReplacementNamed(context, 'memberDashboard');
+        Navigator.pushReplacementNamed(context, 'caregiverDashboard');
       });
-
     }
   }
 
@@ -64,10 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
       padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF9BB7FF),
-            Color(0xFFB4CBFF),
-          ],
+          colors: [Color(0xFF9BB7FF), Color(0xFFB4CBFF)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -87,7 +83,6 @@ class _LoginScreenState extends State<LoginScreen> {
               style: TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 20),
-
 
             //Role seletcor (Sliding)
             _roleSelector(),
@@ -178,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
- //slide role selector
+  //slide role selector
   Widget _roleSelector() {
     return Container(
       height: 45,
@@ -193,8 +188,9 @@ class _LoginScreenState extends State<LoginScreen> {
           // Sliding background
           AnimatedAlign(
             duration: const Duration(milliseconds: 200),
-            alignment:
-            selectedRole == "Member" ? Alignment.centerLeft : Alignment.centerRight,
+            alignment: selectedRole == "Member"
+                ? Alignment.centerLeft
+                : Alignment.centerRight,
             child: Container(
               width: (MediaQuery.of(context).size.width - 80) / 2,
               decoration: BoxDecoration(
@@ -204,12 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
 
-          Row(
-            children: [
-              _roleButton("Member"),
-              _roleButton("Caregiver"),
-            ],
-          )
+          Row(children: [_roleButton("Member"), _roleButton("Caregiver")]),
         ],
       ),
     );
@@ -239,8 +230,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-
-
   Widget _buildInfoCard() {
     return Container(
       width: double.infinity,
@@ -253,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
             blurRadius: 6,
             spreadRadius: 1,
             color: Colors.black.withOpacity(0.05),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -267,12 +256,21 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 20),
 
-          _buildFeature(Icons.verified, "Verified Caregivers",
-              "Background-checked professionals you can trust"),
-          _buildFeature(Icons.location_on, "Real-Time Updates",
-              "Track tasks, location and care activities live"),
-          _buildFeature(Icons.chat, "Seamless Communication",
-              "Instant messaging and alerts"),
+          _buildFeature(
+            Icons.verified,
+            "Verified Caregivers",
+            "Background-checked professionals you can trust",
+          ),
+          _buildFeature(
+            Icons.location_on,
+            "Real-Time Updates",
+            "Track tasks, location and care activities live",
+          ),
+          _buildFeature(
+            Icons.chat,
+            "Seamless Communication",
+            "Instant messaging and alerts",
+          ),
         ],
       ),
     );
@@ -290,9 +288,13 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 13)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
                 Text(desc, style: const TextStyle(fontSize: 12)),
               ],
             ),

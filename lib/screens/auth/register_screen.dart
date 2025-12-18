@@ -86,7 +86,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             blurRadius: 6,
             spreadRadius: 1,
             color: Colors.black.withOpacity(0.05),
-          )
+          ),
         ],
       ),
       child: const Column(
@@ -165,12 +165,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
           // Gender Dropdown
           DropdownButtonFormField<String>(
-            value: selectedGender,
+            initialValue: selectedGender,
             items: ["Male", "Female", "Other"]
-                .map((gender) => DropdownMenuItem(
-              value: gender,
-              child: Text(gender),
-            ))
+                .map(
+                  (gender) =>
+                      DropdownMenuItem(value: gender, child: Text(gender)),
+                )
                 .toList(),
             onChanged: (value) {
               setState(() {
@@ -182,8 +182,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 14,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -203,8 +205,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 14,
+              ),
               suffixIcon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -236,15 +240,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
             AppTextField(
               controller: extraController,
               hint: "Parent’s Name",
-              validator: (value) =>
-              value!.isEmpty ? "Enter parent name" : null,
+              validator: (value) => value!.isEmpty ? "Enter parent name" : null,
             ),
             const SizedBox(height: 12),
             AppTextField(
               controller: locationController,
               hint: "Parent Location",
               validator: (value) =>
-              value!.isEmpty ? "Enter parent location" : null,
+                  value!.isEmpty ? "Enter parent location" : null,
             ),
             const SizedBox(height: 12),
           ] else ...[
@@ -252,8 +255,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             TextFormField(
               controller: extraController,
               keyboardType: TextInputType.number,
-              validator: (value) =>
-              value!.isEmpty ? "Enter experience" : null,
+              validator: (value) => value!.isEmpty ? "Enter experience" : null,
               onChanged: (value) {
                 setState(() {
                   experience = int.tryParse(value) ?? 0;
@@ -264,8 +266,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 14,
+                ),
                 suffixIcon: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -308,8 +312,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 14,
+              ),
               suffixIcon: IconButton(
                 icon: Icon(
                   passwordVisible ? Icons.visibility : Icons.visibility_off,
@@ -329,8 +335,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             controller: confirmPasswordController,
             obscureText: !confirmPasswordVisible,
             validator: (value) {
-              if (value != passwordController.text)
+              if (value != passwordController.text) {
                 return "Passwords do not match";
+              }
               return null;
             },
             decoration: InputDecoration(
@@ -338,8 +345,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 14,
+              ),
               suffixIcon: IconButton(
                 icon: Icon(
                   confirmPasswordVisible
@@ -355,10 +364,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          AppButton(
-            text: "Create Account",
-            onPressed: registerUser,
-          ),
+          AppButton(text: "Create Account", onPressed: registerUser),
         ],
       ),
     );

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:nepalink/screens/dashboard/caregiver/caregiver_dashboard.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
-import 'screens/dashboard/member/member_dashboard.dart';
+import 'screens/dashboard/caregiver/caregiver_dashboard.dart';
 //import 'screens/Navigation/button_navigation_screen.dart';
 // import 'screens/home/home_screen.dart';
 
@@ -19,13 +20,13 @@ class NepalinkApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF3C7EEF)),
         useMaterial3: true,
       ),
-      initialRoute: '/splash',
+      initialRoute: '/login',
       routes: {
         '/splash': (_) => const SplashScreen(),
         '/onboarding': (_) => const OnboardingScreen(),
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
-        'memberDashboard': (_) => const MemberDashboard(),
+        'caregiverDashboard': (_) => const CaregiverDashboard(),
         //'/navigation':(_)=>const ButtonNavigationScreen()
         // '/home': (_) => const HomeScreen(),
       },

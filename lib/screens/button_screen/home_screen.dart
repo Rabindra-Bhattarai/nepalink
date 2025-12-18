@@ -1,24 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:nepalink/widgets/parent_status_card.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/task_provider.dart';
+import '../../widgets/dashboard_charts.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tasks = ref.watch(taskProvider);
+
+    return Scaffold(
+      // appBar: AppBar(title: const Text("Dashboard")),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: const [
-            ParentStatusCard(
-              parentName: "Mr. Bhattarai",
-              status: "OK",
-              lastCheckIn: "10:45 AM",
-              health: "Good",
-            ),
-          ],
-        ),
+        child: DashboardCharts(tasks: tasks),
       ),
     );
   }

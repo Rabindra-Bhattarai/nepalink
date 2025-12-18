@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:nepalink/screens/button_screen/home_screen.dart';
-import 'package:nepalink/screens/button_screen/tasks_screen.dart';
+import 'package:nepalink/screens/button_screen/task_screen.dart';
 import 'package:nepalink/screens/button_screen/caregiver_screen.dart';
-import 'package:nepalink/screens/button_screen/alerts_screen.dart';
+import 'package:nepalink/screens/button_screen/location_screen.dart';
 import 'package:nepalink/screens/button_screen/profile_screen.dart';
 
-class MemberDashboard extends StatefulWidget {
-  const MemberDashboard({super.key});
+class CaregiverDashboard extends StatefulWidget {
+  const CaregiverDashboard({super.key});
 
   @override
-  State<MemberDashboard> createState() => _MemberDashboardState();
+  State<CaregiverDashboard> createState() => _CaregiverDashboardState();
 }
 
-class _MemberDashboardState extends State<MemberDashboard> {
+class _CaregiverDashboardState extends State<CaregiverDashboard> {
   int _selectedIndex = 0;
 
   List<Widget> lstBottomScreen = [
     const HomeScreen(),
-    const TasksScreen(),
+    const TaskScreen(),
+    const LocationScreen(),
     const CaregiverScreen(),
-    const AlertsScreen(),
     const ProfileScreen(),
   ];
 
@@ -68,9 +68,9 @@ class _MemberDashboardState extends State<MemberDashboard> {
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Tasks'),
+          BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Task'),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'location'),
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Caregiver'),
-          BottomNavigationBarItem(icon: Icon(Icons.warning), label: 'Alerts'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         backgroundColor: Colors.blue,
