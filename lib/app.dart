@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:nepalink/screens/dashboard/caregiver/caregiver_dashboard.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
-import 'screens/home/home_screen.dart';
+import 'screens/dashboard/caregiver/caregiver_dashboard.dart';
+//import 'screens/Navigation/button_navigation_screen.dart';
+// import 'screens/home/home_screen.dart';
 
 class NepalinkApp extends StatelessWidget {
   const NepalinkApp({super.key});
@@ -23,7 +26,9 @@ class NepalinkApp extends StatelessWidget {
         '/onboarding': (_) => const OnboardingScreen(),
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
-        '/home': (_) => const HomeScreen(),
+        'caregiverDashboard': (_) => const CaregiverDashboard(),
+        //'/navigation':(_)=>const ButtonNavigationScreen()
+        // '/home': (_) => const HomeScreen(),
       },
     );
   }
