@@ -1,4 +1,3 @@
-// lib/core/constants/hive_table_constants.dart
 class HiveTableConstant {
   // Private constructor
   HiveTableConstant._();
