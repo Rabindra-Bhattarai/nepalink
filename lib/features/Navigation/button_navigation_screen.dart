@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 // import 'package:nepalink/screens/button_screen/about_screen.dart';
 // import 'package:nepalink/screens/button_screen/card_screen.dart';
-import 'package:nepalink/screens/button_screen/home_screen.dart';
-import 'package:nepalink/screens/button_screen/profile_screen.dart';
+import 'package:nepalink/features/button_screen/home_screen.dart';
+import 'package:nepalink/features/button_screen/profile_screen.dart';
 
 class ButtonNavigationScreen extends StatefulWidget {
   const ButtonNavigationScreen({super.key});
@@ -15,7 +15,6 @@ class _ButtonNavigationScreenState extends State<ButtonNavigationScreen> {
   int _selectedIndex = 0;
 
   List<Widget> lstBottomScreen = [
-
     const HomeScreen(),
     // const CardScreen(),
     const ProfileScreen(),

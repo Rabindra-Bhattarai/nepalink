@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/task.dart';
-import '../providers/task_provider.dart';
+import '../../../dashboard/data/models/task.dart';
+import '../../../../core/providers/task_provider.dart';
 
 class TaskManagerWidget extends ConsumerWidget {
   const TaskManagerWidget({super.key});
@@ -283,6 +283,7 @@ class TaskManagerWidget extends ConsumerWidget {
                           firstDate: DateTime(2020),
                           lastDate: DateTime(2030),
                         );
+
                         if (date != null) {
                           final time = await showTimePicker(
                             context: context,

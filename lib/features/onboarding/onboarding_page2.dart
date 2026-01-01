@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../widgets/app_button.dart';
+import '../auth/presentation/widgets/app_button.dart';
 
-class OnboardingPage3 extends StatelessWidget {
+class OnboardingPage2 extends StatelessWidget {
   final VoidCallback onNext;
 
-  const OnboardingPage3({super.key, required this.onNext});
+  const OnboardingPage2({super.key, required this.onNext});
 
   @override
   Widget build(BuildContext context) {
@@ -13,13 +13,13 @@ class OnboardingPage3 extends StatelessWidget {
       children: [
         Expanded(
           child: Image.asset(
-            'assets/images/onboarding3.png',
+            'assets/images/onboarding2.png',
             fit: BoxFit.contain,
           ),
         ),
         const SizedBox(height: 24),
         const Text(
-          "Track & Communicate",
+          "Hire Caregivers Easily",
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
@@ -27,13 +27,13 @@ class OnboardingPage3 extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.0),
           child: Text(
-            "Assign tasks, share location, and chat securely with your caregivers.",
+            "Browse profiles, hire, and manage caregivers in one place.",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Colors.black87),
           ),
         ),
         const SizedBox(height: 24),
-        AppButton(text: "Start Now", onPressed: onNext),
+        AppButton(text: "Next", onPressed: onNext),
       ],
     );
   }

@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/legacy.dart';
-import '../models/task.dart';
+import '../../features/dashboard/data/models/task.dart';
 
 final taskProvider = StateProvider<List<Task>>((ref) {
   return [

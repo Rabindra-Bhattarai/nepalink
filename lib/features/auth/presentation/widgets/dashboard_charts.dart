@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../models/task.dart';
+import '../../../dashboard/data/models/task.dart';
 
 class DashboardCharts extends StatelessWidget {
   final List<Task> tasks;

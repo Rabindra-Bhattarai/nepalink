@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/task_provider.dart';
-import '../../widgets/dashboard_charts.dart';
+import '../../core/providers/task_provider.dart';
+import '../auth/presentation/widgets/dashboard_charts.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
