@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/app_button.dart';
-import '../widgets/app_text_field.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -10,362 +8,311 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  String selectedRole = "Member";
   final _formKey = GlobalKey<FormState>();
 
-  final fullNameController = TextEditingController();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
-  final extraController = TextEditingController();
-  final locationController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
-  int experience = 0;
-  int age = 18;
-  final ageController = TextEditingController(text: "18");
-  String selectedGender = "Male";
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+  bool _agreedToTerms = false;
+  String _selectedCountryCode = '+977'; // Default Nepal
 
-  bool passwordVisible = false;
-  bool confirmPasswordVisible = false;
+  final List<Map<String, String>> _countryCodes = [
+    {'code': '+977', 'flag': '🇳🇵'},
+    {'code': '+91', 'flag': '🇮🇳'},
+    {'code': '+1', 'flag': '🇺🇸'},
+  ];
 
-  void registerUser() {
-    if (_formKey.currentState!.validate()) {
+  void _handleSignup() {
+    if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("$selectedRole registered successfully!"),
-          backgroundColor: Colors.green,
-        ),
+        const SnackBar(content: Text('Please agree to Terms & Conditions')),
       );
+      return;
+    }
 
-      Future.delayed(const Duration(milliseconds: 500), () {
-        Navigator.pushReplacementNamed(context, '/login');
-      });
+    if (_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Registration successful!')));
+      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F2),
+      backgroundColor: const Color(0xFFF7F9FC),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // Back button
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, size: 28),
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/login');
-                  },
-                ),
-              ),
-
-              _buildInfoCard(),
-              const SizedBox(height: 25),
-              _buildRoleSelector(),
-              const SizedBox(height: 20),
-              _buildForm(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 6,
-            spreadRadius: 1,
-            color: Colors.black.withOpacity(0.05),
-          ),
-        ],
-      ),
-      child: const Column(
-        children: [
-          Text(
-            "Welcome to NepaLink",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 10),
-          Text(
-            "Professional elderly care services that bridge the distance.",
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRoleSelector() {
-    return Row(
-      children: [
-        _roleTab("Member"),
-        const SizedBox(width: 10),
-        _roleTab("Caregiver"),
-      ],
-    );
-  }
-
-  Widget _roleTab(String role) {
-    final isSelected = selectedRole == role;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => selectedRole = role),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF3C7EEF) : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: Text(
-              role,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildForm() {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          AppTextField(
-            controller: fullNameController,
-            hint: "Full Name",
-            validator: (value) => value!.isEmpty ? "Enter your name" : null,
-          ),
-          const SizedBox(height: 12),
-          AppTextField(
-            controller: emailController,
-            hint: "Email",
-            validator: (value) {
-              if (value!.isEmpty) return "Enter email";
-              if (!value.contains("@")) return "Enter valid email";
-              return null;
-            },
-          ),
-          const SizedBox(height: 12),
-
-          // Gender Dropdown
-          DropdownButtonFormField<String>(
-            initialValue: selectedGender,
-            items: ["Male", "Female", "Other"]
-                .map(
-                  (gender) =>
-                      DropdownMenuItem(value: gender, child: Text(gender)),
-                )
-                .toList(),
-            onChanged: (value) {
-              setState(() {
-                selectedGender = value!;
-              });
-            },
-            decoration: InputDecoration(
-              hintText: "Gender",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 14,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Age Stepper
-          TextFormField(
-            controller: ageController,
-            keyboardType: TextInputType.number,
-            validator: (value) => value!.isEmpty ? "Enter age" : null,
-            onChanged: (value) {
-              setState(() {
-                age = int.tryParse(value) ?? 18;
-              });
-            },
-            decoration: InputDecoration(
-              hintText: "Age",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 14,
-              ),
-              suffixIcon: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.remove),
-                    onPressed: () {
-                      setState(() {
-                        if (age > 1) age--;
-                        ageController.text = age.toString();
-                      });
-                    },
+              // Curved header with logo
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF3C7EEF), Color(0xFF6A9BFF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: () {
-                      setState(() {
-                        age++;
-                        ageController.text = age.toString();
-                      });
-                    },
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(40),
+                    bottomRight: Radius.circular(40),
                   ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          if (selectedRole == "Member") ...[
-            AppTextField(
-              controller: extraController,
-              hint: "Parent’s Name",
-              validator: (value) => value!.isEmpty ? "Enter parent name" : null,
-            ),
-            const SizedBox(height: 12),
-            AppTextField(
-              controller: locationController,
-              hint: "Parent Location",
-              validator: (value) =>
-                  value!.isEmpty ? "Enter parent location" : null,
-            ),
-            const SizedBox(height: 12),
-          ] else ...[
-            // Caregiver experience stepper
-            TextFormField(
-              controller: extraController,
-              keyboardType: TextInputType.number,
-              validator: (value) => value!.isEmpty ? "Enter experience" : null,
-              onChanged: (value) {
-                setState(() {
-                  experience = int.tryParse(value) ?? 0;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: "Years of Experience",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 14,
-                ),
-                suffixIcon: Row(
-                  mainAxisSize: MainAxisSize.min,
+                child: Column(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.remove),
-                      onPressed: () {
-                        setState(() {
-                          if (experience > 0) experience--;
-                          extraController.text = experience.toString();
-                        });
-                      },
+                    Image.asset(
+                      'assets/images/nepalink.png',
+                      height: 80,
+                      fit: BoxFit.contain,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: () {
-                        setState(() {
-                          experience++;
-                          extraController.text = experience.toString();
-                        });
-                      },
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Welcome to NepaLink',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Professional elderly care services\nthat bridge the distance',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 13, color: Colors.white70),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-          ],
 
-          // Password Field
-          TextFormField(
-            controller: passwordController,
-            obscureText: !passwordVisible,
-            validator: (value) {
-              if (value!.isEmpty) return "Enter password";
-              if (value.length < 6) return "Password too short";
-              return null;
-            },
-            decoration: InputDecoration(
-              hintText: "Password",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 14,
-              ),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  passwordVisible ? Icons.visibility : Icons.visibility_off,
-                ),
-                onPressed: () {
-                  setState(() {
-                    passwordVisible = !passwordVisible;
-                  });
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
+              const SizedBox(height: 24),
 
-          // Confirm Password Field
-          TextFormField(
-            controller: confirmPasswordController,
-            obscureText: !confirmPasswordVisible,
-            validator: (value) {
-              if (value != passwordController.text) {
-                return "Passwords do not match";
-              }
-              return null;
-            },
-            decoration: InputDecoration(
-              hintText: "Confirm Password",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 14,
-              ),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  confirmPasswordVisible
-                      ? Icons.visibility
-                      : Icons.visibility_off,
+              // Form card
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        // Full Name
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Full Name',
+                            prefixIcon: Icon(Icons.person_outline),
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Enter name'
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Email
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: const InputDecoration(
+                            labelText: 'Email',
+                            prefixIcon: Icon(Icons.email_outlined),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Enter email';
+                            }
+                            if (!value.contains('@')) {
+                              return 'Enter valid email';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Phone + Country Code (responsive)
+                        Row(
+                          children: [
+                            Flexible(
+                              flex: 2,
+                              child: DropdownButtonFormField<String>(
+                                value: _selectedCountryCode,
+                                items: _countryCodes.map((c) {
+                                  return DropdownMenuItem(
+                                    value: c['code'],
+                                    child: Text('${c['flag']} ${c['code']}'),
+                                  );
+                                }).toList(),
+                                onChanged: (val) =>
+                                    setState(() => _selectedCountryCode = val!),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Flexible(
+                              flex: 3,
+                              child: TextFormField(
+                                controller: _phoneController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Phone Number',
+                                  prefixIcon: Icon(Icons.phone_outlined),
+                                ),
+                                validator: (value) =>
+                                    value == null || value.isEmpty
+                                    ? 'Enter phone number'
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Password
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
+                              onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
+                            ),
+                          ),
+                          validator: (value) =>
+                              value == null || value.length < 6
+                              ? 'Password too short'
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Confirm Password
+                        TextFormField(
+                          controller: _confirmPasswordController,
+                          obscureText: _obscureConfirmPassword,
+                          decoration: InputDecoration(
+                            labelText: 'Confirm Password',
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirmPassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
+                              onPressed: () => setState(
+                                () => _obscureConfirmPassword =
+                                    !_obscureConfirmPassword,
+                              ),
+                            ),
+                          ),
+                          validator: (value) =>
+                              value != _passwordController.text
+                              ? 'Passwords do not match'
+                              : null,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Terms & Conditions
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: _agreedToTerms,
+                              onChanged: (val) =>
+                                  setState(() => _agreedToTerms = val ?? false),
+                            ),
+                            const SizedBox(width: 8),
+                            const Expanded(
+                              child: Text(
+                                'I agree to the Terms & Conditions and Privacy Policy',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Gradient pill button
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF3C7EEF), Color(0xFF6A9BFF)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            onPressed: _handleSignup,
+                            child: const Text(
+                              'Create Account',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Login Link
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('Already have an account? '),
+                            GestureDetector(
+                              onTap: () => Navigator.pushReplacementNamed(
+                                context,
+                                '/login',
+                              ),
+                              child: const Text(
+                                'Login',
+                                style: TextStyle(
+                                  color: Color(0xFF3C7EEF),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                onPressed: () {
-                  setState(() {
-                    confirmPasswordVisible = !confirmPasswordVisible;
-                  });
-                },
               ),
-            ),
+            ],
           ),
-          const SizedBox(height: 20),
-          AppButton(text: "Create Account", onPressed: registerUser),
-        ],
+        ),
       ),
     );
   }
