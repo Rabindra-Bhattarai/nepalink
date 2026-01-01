@@ -24,6 +24,7 @@ class UserModel extends HiveObject {
   @HiveField(5)
   final String password; // stored locally for now
 
+  // Constructor
   UserModel({
     required this.id,
     required this.name,
@@ -33,7 +34,7 @@ class UserModel extends HiveObject {
     required this.password,
   });
 
-  /// Convert to domain entity
+  /// Convert Model -> Entity
   UserEntity toEntity() => UserEntity(
     id: id,
     name: name,
@@ -42,7 +43,7 @@ class UserModel extends HiveObject {
     countryCode: countryCode,
   );
 
-  /// Create from domain entity
+  /// Convert Entity -> Model
   factory UserModel.fromEntity(UserEntity entity, String password) {
     return UserModel(
       id: entity.id,
@@ -52,5 +53,10 @@ class UserModel extends HiveObject {
       countryCode: entity.countryCode,
       password: password,
     );
+  }
+
+  /// Convert List<Model> -> List<Entity>
+  static List<UserEntity> toEntityList(List<UserModel> models) {
+    return models.map((model) => model.toEntity()).toList();
   }
 }
