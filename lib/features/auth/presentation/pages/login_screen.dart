@@ -1,39 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nepalink/features/auth/presentation/view_model/login_viewmodel.dart';
+import 'package:nepalink/features/auth/presentation/state/login_state.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  bool obscurePassword = true; // show/hide password
-  String selectedRole = "Member"; // default selected role
+  bool obscurePassword = true;
+  String selectedRole = "Member";
 
-  final _formKey = GlobalKey<FormState>(); // for form validation
+  final _formKey = GlobalKey<FormState>();
 
   void loginUser() {
     if (_formKey.currentState!.validate()) {
-      // All fields valid
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Logging in as $selectedRole..."),
-          backgroundColor: Colors.green,
-        ),
-      );
-      // Navigate to Dashboard Screen after short delay
-      Future.delayed(const Duration(milliseconds: 100), () {
-        Navigator.pushReplacementNamed(context, 'caregiverDashboard');
-      });
+      ref
+          .read(loginViewModelProvider.notifier)
+          .login(emailController.text.trim(), passwordController.text.trim());
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(loginViewModelProvider);
+
+    // React to login success/failure
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (state.status == LoginStatus.success) {
+        Navigator.pushReplacementNamed(context, 'caregiverDashboard');
+      } else if (state.status == LoginStatus.failure &&
+          state.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.errorMessage!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F2),
       body: SafeArea(
@@ -42,13 +54,9 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              /// TOP INFO CARD
               _buildInfoCard(),
-
               const SizedBox(height: 25),
-
-              /// LOGIN CARD
-              _buildLoginCard(context),
+              _buildLoginCard(context, state),
             ],
           ),
         ),
@@ -56,8 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  //Login Card UI
-  Widget _buildLoginCard(BuildContext context) {
+  Widget _buildLoginCard(BuildContext context, LoginState state) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 22),
@@ -84,12 +91,9 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 20),
 
-            //Role seletcor (Sliding)
             _roleSelector(),
-
             const SizedBox(height: 25),
 
-            //Email Field
             TextFormField(
               controller: emailController,
               keyboardType: TextInputType.emailAddress,
@@ -104,10 +108,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 return null;
               },
             ),
-
             const SizedBox(height: 14),
 
-            //Password field
             TextFormField(
               controller: passwordController,
               obscureText: obscurePassword,
@@ -133,10 +135,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 return null;
               },
             ),
-
             const SizedBox(height: 22),
 
-            // SIGN IN BUTTON
             SizedBox(
               width: double.infinity,
               height: 48,
@@ -148,22 +148,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 onPressed: loginUser,
-                child: const Text(
-                  "Sign In",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
+                child: state.status == LoginStatus.loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        "Sign In",
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
               ),
             ),
 
             const SizedBox(height: 15),
-
-            // REGISTER NAVIGATION
             GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, "/register");
-              },
+              onTap: () => Navigator.pushNamed(context, "/register"),
               child: const Text(
-                "Don’t have an account? Register",
+                "Don't have an account? Register",
                 style: TextStyle(fontSize: 13),
               ),
             ),
@@ -173,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  //slide role selector
+  // Role selector
   Widget _roleSelector() {
     return Container(
       height: 45,
@@ -185,7 +183,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: Stack(
         children: [
-          // Sliding background
           AnimatedAlign(
             duration: const Duration(milliseconds: 200),
             alignment: selectedRole == "Member"
@@ -199,17 +196,14 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-
           Row(children: [_roleButton("Member"), _roleButton("Caregiver")]),
         ],
       ),
     );
   }
 
-  // Role buttons inside selector
   Widget _roleButton(String role) {
     final isSelected = selectedRole == role;
-
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -255,7 +249,6 @@ class _LoginScreenState extends State<LoginScreen> {
             style: TextStyle(fontSize: 13),
           ),
           const SizedBox(height: 20),
-
           _buildFeature(
             Icons.verified,
             "Verified Caregivers",
@@ -276,7 +269,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  /// Feature rows
   Widget _buildFeature(IconData icon, String title, String desc) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -304,7 +296,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  /// Input styling
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,

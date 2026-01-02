@@ -1,6 +1,6 @@
-import 'package:nepalink/core/errors/failures.dart';
-import '../entities/user_entity.dart';
 import 'package:dartz/dartz.dart';
+import 'package:nepalink/core/errors/failures.dart';
+import 'package:nepalink/features/auth/domain/entities/user_entity.dart';
 
 abstract interface class IAuthRepository {
   Future<Either<Failure, bool>> register(UserEntity user);

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nepalink/features/auth/domain/entities/user_entity.dart';
+import 'package:nepalink/features/auth/presentation/state/register_state.dart';
+import 'package:nepalink/features/auth/presentation/view_model/register_viewmodel.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -19,7 +22,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _agreedToTerms = false;
-  String _selectedCountryCode = '+977'; // Default Nepal
+  String _selectedCountryCode = '+977';
 
   final List<Map<String, String>> _countryCodes = [
     {'code': '+977', 'flag': '🇳🇵'},
@@ -36,22 +39,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Registration successful!')));
-      Navigator.pushReplacementNamed(context, '/login');
+      final user = UserEntity(
+        userid: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        phone: '$_selectedCountryCode${_phoneController.text.trim()}',
+        password: _passwordController.text.trim(),
+      );
+
+      ref
+          .read(registerViewModelProvider.notifier)
+          .register(user, _passwordController.text.trim());
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(registerViewModelProvider);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (state.status == RegisterStatus.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Registration successful!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pushReplacementNamed(context, '/login');
+      } else if (state.status == RegisterStatus.failure &&
+          state.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.errorMessage!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FC),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Curved header with logo
+              // Gradient header with logo
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 40),
@@ -68,11 +100,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 child: Column(
                   children: [
-                    Image.asset(
-                      'assets/images/nepalink.png',
-                      height: 80,
-                      fit: BoxFit.contain,
-                    ),
+                    Image.asset('assets/images/nepalink.png', height: 80),
                     const SizedBox(height: 12),
                     const Text(
                       'Welcome to NepaLink',
@@ -114,7 +142,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     key: _formKey,
                     child: Column(
                       children: [
-                        // Full Name
                         TextFormField(
                           controller: _nameController,
                           decoration: const InputDecoration(
@@ -127,7 +154,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Email
                         TextFormField(
                           controller: _emailController,
                           decoration: const InputDecoration(
@@ -146,7 +172,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Phone + Country Code (responsive)
                         Row(
                           children: [
                             Flexible(
@@ -182,7 +207,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Password
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
@@ -200,6 +224,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                             ),
                           ),
+                          // Password field (continued)
                           validator: (value) =>
                               value == null || value.length < 6
                               ? 'Password too short'
@@ -273,14 +298,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                             ),
                             onPressed: _handleSignup,
-                            child: const Text(
-                              'Create Account',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
+                            child: state.status == RegisterStatus.loading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                : const Text(
+                                    'Create Account',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -305,6 +334,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ],
                         ),
+
+                        // Error or Success feedback
+                        if (state.status == RegisterStatus.failure &&
+                            state.errorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Text(
+                              "Error: ${state.errorMessage!}",
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        if (state.status == RegisterStatus.success)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 12),
+                            child: Text(
+                              "Registration successful!",
+                              style: TextStyle(color: Colors.green),
+                            ),
+                          ),
                       ],
                     ),
                   ),
