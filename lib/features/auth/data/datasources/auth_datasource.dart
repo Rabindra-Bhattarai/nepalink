@@ -10,3 +10,14 @@ abstract interface class IAuthDataSource {
   Future<bool> updateUser(UserHiveModel user);
   Future<bool> deleteUser(String userid);
 }
+
+// abstract interface class IAuthRemoteDataSource {
+//   Future<UserApiModel> register(UserHiveModel user);
+//   Future<UserApiModel?> login(String email, String password);
+//   Future<UserApiModel?> getCurrentUser();
+//   Future<bool> logout();
+//   Future<UserApiModel?> getUserById(String userid);
+//   Future<UserApiModel?> getUserByEmail(String email);
+//   Future<bool> updateUser(UserApiModel user);
+//   Future<bool> deleteUser(String userid);
+// }

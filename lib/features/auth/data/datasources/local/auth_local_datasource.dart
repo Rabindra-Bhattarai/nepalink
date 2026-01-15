@@ -1,19 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nepalink/core/services/hive/hive_service.dart';
+import 'package:nepalink/core/services/storage/user_session_service.dart';
 import 'package:nepalink/features/auth/data/datasources/auth_datasource.dart';
 import 'package:nepalink/features/auth/data/models/user_hive_model.dart';
 
 // Provider
 final authLocalDatasourceProvider = Provider<AuthLocalDatasource>((ref) {
   final hiveService = ref.read(hiveServiceProvider);
-  return AuthLocalDatasource(hiveService: hiveService);
+  final userSessionService = ref.read(userSessionServiceProvider);
+  return AuthLocalDatasource(
+    hiveService: hiveService,
+    userSessionService: userSessionService,
+  );
 });
 
 class AuthLocalDatasource implements IAuthDataSource {
   final HiveService _hiveService;
+  final UserSessionService _userSessionService;
 
-  AuthLocalDatasource({required HiveService hiveService})
-    : _hiveService = hiveService;
+  AuthLocalDatasource({
+    required HiveService hiveService,
+    required UserSessionService userSessionService,
+  }) : _hiveService = hiveService,
+       _userSessionService = userSessionService;
 
   @override
   Future<UserHiveModel> register(UserHiveModel user) async {
@@ -23,7 +32,18 @@ class AuthLocalDatasource implements IAuthDataSource {
   @override
   Future<UserHiveModel?> login(String email, String password) async {
     try {
-      return _hiveService.login(email, password);
+      final user = await _hiveService.login(email, password);
+      if (user != null && user.userid.isNotEmpty) {
+        // Save session
+        await _userSessionService.saveUserSession(
+          userId: user.userid,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          password: user.password,
+        );
+      }
+      return user;
     } catch (e) {
       return null;
     }
