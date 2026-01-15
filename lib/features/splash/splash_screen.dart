@@ -17,43 +17,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _navigateToNext() async {
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 2)); // splash delay
     if (!mounted) return;
 
-    final userSessionService = ref.read(userSessionServiceProvider);
-    final isLoggedIn = userSessionService.isLoggedIn();
+    final sessionService = ref.read(userSessionServiceProvider);
+    final isLoggedIn = sessionService.isLoggedIn();
 
     if (isLoggedIn) {
-      // ✅ Navigate to caregiver dashboard if logged in
-      Navigator.pushReplacementNamed(context, 'caregiverDashboard');
+      // 🚀 User already logged in → go to dashboard
+      Navigator.pushReplacementNamed(context, '/caregiverDashboard');
     } else {
-      // ✅ Navigate to login if not logged in
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacementNamed(context, '/onboarding');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final shortestSide = size.shortestSide;
-    final maxLogoWidth = shortestSide < 600
-        ? size.width * 0.75
-        : size.width * 0.6;
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxLogoWidth),
-          child: AspectRatio(
-            aspectRatio: 2000 / 383,
-            child: Image.asset(
-              'assets/images/nepalink.png',
-              fit: BoxFit.contain,
-            ),
-          ),
-        ),
-      ),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

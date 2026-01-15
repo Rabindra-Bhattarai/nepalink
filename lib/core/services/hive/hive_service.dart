@@ -49,10 +49,12 @@ class HiveService {
   }
 
   // Login - find user by email and password
-  UserHiveModel? login(String email, String password) {
+  Future<UserHiveModel?> login(String email, String password) async {
     try {
       return _userBox.values.firstWhere(
-        (user) => user.email == email && user.password == password,
+        (user) =>
+            user.email.trim().toLowerCase() == email.trim().toLowerCase() &&
+            user.password == password.trim(),
       );
     } catch (e) {
       return null;

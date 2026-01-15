@@ -26,7 +26,7 @@ class NepalinkApp extends StatelessWidget {
         '/onboarding': (_) => const OnboardingScreen(),
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
-        'caregiverDashboard': (_) => const CaregiverDashboard(),
+        '/caregiverDashboard': (_) => const CaregiverDashboard(),
         //'/navigation':(_)=>const ButtonNavigationScreen()
         // '/home': (_) => const HomeScreen(),
       },

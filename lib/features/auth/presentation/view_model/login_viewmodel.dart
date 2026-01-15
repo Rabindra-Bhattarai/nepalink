@@ -19,7 +19,10 @@ class LoginViewModel extends StateNotifier<LoginState> {
         status: LoginStatus.failure,
         errorMessage: failure.message,
       ),
-      (user) => state = state.copyWith(status: LoginStatus.success),
+      (user) {
+        print("Login success for user: ${user.email}");
+        state = state.copyWith(status: LoginStatus.success);
+      },
     );
   }
 }
