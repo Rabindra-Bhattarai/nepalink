@@ -31,15 +31,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(loginViewModelProvider);
 
-    // React to login success/failure
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (state.status == LoginStatus.success) {
-        Navigator.pushReplacementNamed(context, 'caregiverDashboard');
-      } else if (state.status == LoginStatus.failure &&
-          state.errorMessage != null) {
+    // Listen for login state changes
+    ref.listen<LoginState>(loginViewModelProvider, (prev, next) {
+      if (next.status == LoginStatus.success) {
+        Navigator.pushReplacementNamed(context, '/caregiverDashboard'); // ✅ fixed route
+      } else if (next.status == LoginStatus.failure &&
+          next.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(state.errorMessage!),
+            content: Text(next.errorMessage!),
             backgroundColor: Colors.red,
           ),
         );
@@ -147,13 +147,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                onPressed: loginUser,
+                onPressed: state.status == LoginStatus.loading ? null : loginUser,
                 child: state.status == LoginStatus.loading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
-                        "Sign In",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
+                  "Sign In",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
               ),
             ),
 
@@ -305,6 +305,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFF3C7EEF), width: 1.5),
       ),
     );
   }

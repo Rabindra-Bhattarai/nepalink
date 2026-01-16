@@ -6,15 +6,15 @@ import 'package:nepalink/features/auth/data/models/user_hive_model.dart';
 
 // Provider
 final authLocalDatasourceProvider = Provider<AuthLocalDatasource>((ref) {
-  final hiveService = ref.read(hiveServiceProvider);
-  final userSessionService = ref.read(userSessionServiceProvider);
+  final hiveService = ref.watch(hiveServiceProvider);
+  final userSessionService = ref.watch(userSessionServiceProvider);
   return AuthLocalDatasource(
     hiveService: hiveService,
     userSessionService: userSessionService,
   );
 });
 
-class AuthLocalDatasource implements IAuthDataSource {
+class AuthLocalDatasource implements IAuthLocalDataSource {
   final HiveService _hiveService;
   final UserSessionService _userSessionService;
 
@@ -31,23 +31,22 @@ class AuthLocalDatasource implements IAuthDataSource {
 
   @override
   Future<UserHiveModel?> login(String email, String password) async {
-    try {
-      final user = await _hiveService.login(email, password);
-      if (user != null && user.userid.isNotEmpty) {
-        // Save session
-        await _userSessionService.saveUserSession(
-          userId: user.userid,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          password: user.password,
-        );
-      }
+    final user = await _hiveService.login(email, password);
+    if (user != null && user.userid.isNotEmpty) {
+      await _userSessionService.saveUserSession(
+        userId: user.userid,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        password: user.password,
+      );
       return user;
-    } catch (e) {
+    } else {
+      await _userSessionService.clearSession(); // important
       return null;
     }
   }
+
 
   @override
   Future<UserHiveModel?> getCurrentUser() async {

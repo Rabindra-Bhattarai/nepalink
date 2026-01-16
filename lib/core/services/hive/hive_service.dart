@@ -56,7 +56,7 @@ class HiveService {
             user.email.trim().toLowerCase() == email.trim().toLowerCase() &&
             user.password == password.trim(),
       );
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }
@@ -98,7 +98,7 @@ class HiveService {
   // Logout (clear all users)
   Future<bool> logout() async {
     try {
-      await _userBox.clear();
+      //do not clear all users here
       return true;
     } catch (e) {
       return false;

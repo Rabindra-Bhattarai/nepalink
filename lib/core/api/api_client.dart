@@ -6,7 +6,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nepalink/core/api/api_endpoints.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
-// Provider for ApiClient
 final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient();
 });
@@ -27,7 +26,6 @@ class ApiClient {
       ),
     );
 
-    // Add interceptors
     _dio.interceptors.add(_AuthInterceptor());
 
     // Auto retry on network failures
@@ -50,7 +48,6 @@ class ApiClient {
       ),
     );
 
-    // Only add logger in debug mode
     if (kDebugMode) {
       _dio.interceptors.add(
         PrettyDioLogger(
@@ -67,7 +64,6 @@ class ApiClient {
 
   Dio get dio => _dio;
 
-  // GET request
   Future<Response> get(
     String path, {
     Map<String, dynamic>? queryParameters,
@@ -76,7 +72,6 @@ class ApiClient {
     return _dio.get(path, queryParameters: queryParameters, options: options);
   }
 
-  // POST request
   Future<Response> post(
     String path, {
     dynamic data,
@@ -91,7 +86,6 @@ class ApiClient {
     );
   }
 
-  // PUT request
   Future<Response> put(
     String path, {
     dynamic data,
@@ -106,7 +100,6 @@ class ApiClient {
     );
   }
 
-  // DELETE request
   Future<Response> delete(
     String path, {
     dynamic data,
@@ -121,7 +114,6 @@ class ApiClient {
     );
   }
 
-  // Multipart request for file uploads
   Future<Response> uploadFile(
     String path, {
     required FormData formData,
@@ -137,7 +129,6 @@ class ApiClient {
   }
 }
 
-// Auth Interceptor to add JWT token to requests
 class _AuthInterceptor extends Interceptor {
   final _storage = const FlutterSecureStorage();
   static const String _tokenKey = 'auth_token';
@@ -147,20 +138,15 @@ class _AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    // Skip auth for public endpoints
-    final publicEndpoints = [
-      ApiEndpoints.batches,
-      ApiEndpoints.categories,
-      ApiEndpoints.studentLogin,
-    ];
+    final publicEndpoints = [ApiEndpoints.userLogin, ApiEndpoints.userSignup];
 
     final isPublicGet =
         options.method == 'GET' &&
         publicEndpoints.any((endpoint) => options.path.startsWith(endpoint));
 
     final isAuthEndpoint =
-        options.path == ApiEndpoints.studentLogin ||
-        options.path == ApiEndpoints.students;
+        options.path == ApiEndpoints.userLogin ||
+        options.path == ApiEndpoints.userSignup;
 
     if (!isPublicGet && !isAuthEndpoint) {
       final token = await _storage.read(key: _tokenKey);
@@ -174,11 +160,8 @@ class _AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    // Handle 401 Unauthorized - token expired
     if (err.response?.statusCode == 401) {
-      // Clear token and redirect to login
       _storage.delete(key: _tokenKey);
-      // You can add navigation logic here or use a callback
     }
     handler.next(err);
   }
