@@ -1,47 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nepalink/core/services/storage/user_session_service.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
-
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _navigateToNext();
+  }
 
-    // Redirect to Login after 2 seconds
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/onboarding');
-      }
-    });
+  Future<void> _navigateToNext() async {
+    await Future.delayed(const Duration(seconds: 2)); // splash delay
+    if (!mounted) return;
+
+    final sessionService = ref.read(userSessionServiceProvider);
+    final isLoggedIn = sessionService.isLoggedIn();
+
+    if (isLoggedIn) {
+      // 🚀 User already logged in → go to dashboard
+      Navigator.pushReplacementNamed(context, '/caregiverDashboard');
+    } else {
+      Navigator.pushReplacementNamed(context, '/onboarding');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final shortestSide = size.shortestSide;
-    final maxLogoWidth =
-    shortestSide < 600 ? size.width * 0.75 : size.width * 0.6;
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxLogoWidth),
-          child: AspectRatio(
-            aspectRatio: 2000 / 383,
-            child: Image.asset(
-              'assets/images/nepalink.png',
-              fit: BoxFit.contain,
-            ),
-          ),
-        ),
-      ),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

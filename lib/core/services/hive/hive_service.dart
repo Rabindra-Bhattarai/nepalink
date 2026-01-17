@@ -49,12 +49,14 @@ class HiveService {
   }
 
   // Login - find user by email and password
-  UserHiveModel? login(String email, String password) {
+  Future<UserHiveModel?> login(String email, String password) async {
     try {
       return _userBox.values.firstWhere(
-        (user) => user.email == email && user.password == password,
+        (user) =>
+            user.email.trim().toLowerCase() == email.trim().toLowerCase() &&
+            user.password == password.trim(),
       );
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }
@@ -96,7 +98,7 @@ class HiveService {
   // Logout (clear all users)
   Future<bool> logout() async {
     try {
-      await _userBox.clear();
+      //do not clear all users here
       return true;
     } catch (e) {
       return false;

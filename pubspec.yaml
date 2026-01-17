@@ -39,12 +39,22 @@ dependencies:
   cupertino_icons: ^1.0.8
   fl_chart: ^1.1.1
   flutter_riverpod: ^3.0.3
+  riverpod_annotation: ^3.0.3
   intl: ^0.20.2
   dartz: ^0.10.1
   shared_preferences: ^2.5.4
   equatable: ^2.0.7
   uuid: ^4.5.2
   path_provider: ^2.1.5
+  path: ^1.9.0
+
+  #Networking
+  dio: ^5.4.1
+  dio_smart_retry: ^7.0.1
+  pretty_dio_logger: ^1.4.0
+  connectivity_plus: ^7.0.0
+  google_sign_in: ^7.2.0
+  flutter_secure_storage: ^10.0.0
 
 dev_dependencies:
   flutter_test:
