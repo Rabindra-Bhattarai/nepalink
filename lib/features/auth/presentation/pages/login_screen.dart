@@ -15,8 +15,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool obscurePassword = true;
-  String selectedRole = "Member";
-
   final _formKey = GlobalKey<FormState>();
 
   void loginUser() {
@@ -31,10 +29,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(loginViewModelProvider);
 
-    // Listen for login state changes
     ref.listen<LoginState>(loginViewModelProvider, (prev, next) {
       if (next.status == LoginStatus.success) {
-        Navigator.pushReplacementNamed(context, '/caregiverDashboard'); // ✅ fixed route
+        Navigator.pushReplacementNamed(context, '/caregiverDashboard');
       } else if (next.status == LoginStatus.failure &&
           next.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -91,9 +88,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             const SizedBox(height: 20),
 
-            _roleSelector(),
-            const SizedBox(height: 25),
-
             TextFormField(
               controller: emailController,
               keyboardType: TextInputType.emailAddress,
@@ -147,78 +141,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                onPressed: state.status == LoginStatus.loading ? null : loginUser,
+                onPressed: state.status == LoginStatus.loading
+                    ? null
+                    : loginUser,
                 child: state.status == LoginStatus.loading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
-                  "Sign In",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
+                        "Sign In",
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
               ),
             ),
 
             const SizedBox(height: 15),
+
             GestureDetector(
               onTap: () => Navigator.pushNamed(context, "/register"),
-              child: const Text(
-                "Don't have an account? Register",
-                style: TextStyle(fontSize: 13),
+              child: RichText(
+                text: TextSpan(
+                  style: const TextStyle(fontSize: 13, color: Colors.black),
+                  children: [
+                    const TextSpan(text: "Don't have an account? "),
+                    const TextSpan(
+                      text: "Register",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3C7EEF),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  // Role selector
-  Widget _roleSelector() {
-    return Container(
-      height: 45,
-      width: double.infinity,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Stack(
-        children: [
-          AnimatedAlign(
-            duration: const Duration(milliseconds: 200),
-            alignment: selectedRole == "Member"
-                ? Alignment.centerLeft
-                : Alignment.centerRight,
-            child: Container(
-              width: (MediaQuery.of(context).size.width - 80) / 2,
-              decoration: BoxDecoration(
-                color: const Color(0xFF3C7EEF),
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-          Row(children: [_roleButton("Member"), _roleButton("Caregiver")]),
-        ],
-      ),
-    );
-  }
-
-  Widget _roleButton(String role) {
-    final isSelected = selectedRole == role;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            selectedRole = role;
-          });
-        },
-        child: Center(
-          child: Text(
-            role,
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black87,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
         ),
       ),
     );
