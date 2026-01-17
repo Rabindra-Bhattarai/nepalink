@@ -23,6 +23,21 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
        _userSessionService = userSessionService;
 
   @override
+  Future<UserApiModel> registerUser(UserApiModel user) async {
+    final response = await _apiClient.post(
+      ApiEndpoints.userSignup,
+      data: user.toJson(),
+    );
+
+    if (response.data['success'] == true) {
+      final data = response.data['data'] as Map<String, dynamic>;
+      return UserApiModel.fromJson(data);
+    }
+
+    throw Exception(response.data['message'] ?? 'Failed to register user');
+  }
+
+  @override
   Future<UserApiModel?> loginUser(String email, String password) async {
     final response = await _apiClient.post(
       ApiEndpoints.userLogin,
@@ -30,15 +45,15 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
     );
 
     if (response.data['success'] == true) {
-      final data = response.data['data'] as Map<String, dynamic>;
-      final user = UserApiModel.fromJson(data['user']);
+      final user = UserApiModel.fromLoginJson(response.data);
 
       await _userSessionService.saveUserSession(
-        userId: user.id!,
+        userId: user.id ?? '',
         email: user.email,
         name: user.name,
-        phone: '',
+        phone: user.phone,
         password: '',
+        token: user.token ?? '',
       );
 
       return user;
@@ -48,42 +63,12 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
   }
 
   @override
-  Future<UserApiModel> registerUser(UserApiModel user) async {
-    final response = await _apiClient.post(
-      ApiEndpoints.userSignup,
-      data: user.toJson(),
-    );
-
-    if (response.data['success'] == true) {
-      final data = response.data['data'] as Map<String, dynamic>;
-      final registeredUser = UserApiModel.fromJson(data);
-      return registeredUser;
-    }
-
-    return user;
-  }
-
-  @override
-  Future<bool> logoutUser() async {
-    try {
-      await _userSessionService.clearSession();
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  @override
   Future<UserApiModel?> getCurrentUser() async {
     try {
-      if (!_userSessionService.isLoggedIn()) {
-        return null;
-      }
+      if (!_userSessionService.isLoggedIn()) return null;
 
       final userId = _userSessionService.getCurrentUserId();
-      if (userId == null) {
-        return null;
-      }
+      if (userId == null) return null;
 
       final response = await _apiClient.get(ApiEndpoints.userById(userId));
 
@@ -92,11 +77,12 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
         final currentUser = UserApiModel.fromJson(data);
 
         await _userSessionService.saveUserSession(
-          userId: currentUser.id!,
+          userId: currentUser.id ?? '',
           email: currentUser.email,
           name: currentUser.name,
-          phone: '',
+          phone: currentUser.phone,
           password: '',
+          token: _userSessionService.getToken() ?? '',
         );
 
         return currentUser;
@@ -105,6 +91,16 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
       return null;
     } catch (_) {
       return null;
+    }
+  }
+
+  @override
+  Future<bool> logoutUser() async {
+    try {
+      await _userSessionService.clearSession();
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 }

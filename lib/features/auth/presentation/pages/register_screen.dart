@@ -65,6 +65,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             backgroundColor: Colors.green,
           ),
         );
+        ref.read(registerViewModelProvider.notifier).reset();
         Navigator.pushReplacementNamed(context, '/login');
       } else if (state.status == RegisterStatus.failure &&
           state.errorMessage != null) {
@@ -83,7 +84,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Gradient header with logo
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 40),
@@ -119,10 +119,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 24),
-
-              // Form card
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Container(
@@ -153,7 +150,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               : null,
                         ),
                         const SizedBox(height: 16),
-
                         TextFormField(
                           controller: _emailController,
                           decoration: const InputDecoration(
@@ -171,7 +167,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           },
                         ),
                         const SizedBox(height: 16),
-
                         Row(
                           children: [
                             Flexible(
@@ -206,7 +201,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
@@ -224,15 +218,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ),
                             ),
                           ),
-                          // Password field (continued)
                           validator: (value) =>
                               value == null || value.length < 6
                               ? 'Password too short'
                               : null,
                         ),
                         const SizedBox(height: 16),
-
-                        // Confirm Password
                         TextFormField(
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirmPassword,
@@ -257,8 +248,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               : null,
                         ),
                         const SizedBox(height: 20),
-
-                        // Terms & Conditions
                         Row(
                           children: [
                             Checkbox(
@@ -276,8 +265,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ],
                         ),
                         const SizedBox(height: 20),
-
-                        // Gradient pill button
                         Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
@@ -313,17 +300,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-
-                        // Login Link
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Text('Already have an account? '),
                             GestureDetector(
-                              onTap: () => Navigator.pushReplacementNamed(
-                                context,
-                                '/login',
-                              ),
+                              onTap: () {
+                                ref
+                                    .read(registerViewModelProvider.notifier)
+                                    .reset();
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/login',
+                                );
+                              },
                               child: const Text(
                                 'Login',
                                 style: TextStyle(
@@ -334,8 +324,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             ),
                           ],
                         ),
-
-                        // Error or Success feedback
                         if (state.status == RegisterStatus.failure &&
                             state.errorMessage != null)
                           Padding(

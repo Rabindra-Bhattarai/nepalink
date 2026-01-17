@@ -29,6 +29,11 @@ class RegisterViewModel extends StateNotifier<RegisterState> {
       (success) => state = state.copyWith(status: RegisterStatus.success),
     );
   }
+
+  /// Reset state back to initial so user can register again
+  void reset() {
+    state = const RegisterState(status: RegisterStatus.initial);
+  }
 }
 
 // Provider

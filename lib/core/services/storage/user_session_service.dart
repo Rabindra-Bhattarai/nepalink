@@ -22,6 +22,7 @@ class UserSessionService {
   static const String _keyUserEmail = 'user_email';
   static const String _keyUserPhone = 'user_phone';
   static const String _keyUserPassword = 'user_password';
+  static const String _keyUserToken = 'user_token';
 
   UserSessionService({required SharedPreferences prefs}) : _prefs = prefs;
 
@@ -32,6 +33,7 @@ class UserSessionService {
     required String email,
     required String phone,
     required String password,
+    String? token,
   }) async {
     await _prefs.setBool(_keyIsLoggedIn, true);
     await _prefs.setString(_keyUserId, userId);
@@ -39,6 +41,9 @@ class UserSessionService {
     await _prefs.setString(_keyUserEmail, email);
     await _prefs.setString(_keyUserPhone, phone);
     await _prefs.setString(_keyUserPassword, password);
+    if (token != null) {
+      await _prefs.setString(_keyUserToken, token);
+    }
   }
 
   /// Check if user is logged in
@@ -52,6 +57,7 @@ class UserSessionService {
   String? getCurrentUserEmail() => _prefs.getString(_keyUserEmail);
   String? getCurrentUserPhone() => _prefs.getString(_keyUserPhone);
   String? getCurrentUserPassword() => _prefs.getString(_keyUserPassword);
+  String? getToken() => _prefs.getString(_keyUserToken);
 
   /// Clear user session (logout)
   Future<void> clearSession() async {
@@ -61,5 +67,6 @@ class UserSessionService {
     await _prefs.remove(_keyUserEmail);
     await _prefs.remove(_keyUserPhone);
     await _prefs.remove(_keyUserPassword);
+    await _prefs.remove(_keyUserToken);
   }
 }

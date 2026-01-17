@@ -11,7 +11,7 @@ import 'package:nepalink/features/auth/data/models/auth_api_model.dart';
 import 'package:nepalink/features/auth/domain/entities/user_entity.dart';
 import 'package:nepalink/features/auth/domain/repositories/auth_repository.dart';
 
-// Provider
+/// Provider for dependency injection
 final authRepositoryProvider = Provider<IAuthRepository>((ref) {
   final local = ref.read(authLocalDatasourceProvider);
   final remote = ref.read(authRemoteDataSourceProvider);
@@ -37,6 +37,7 @@ class AuthRepository implements IAuthRepository {
        _remote = remoteDataSource,
        _networkInfo = networkInfo;
 
+  /// Register user
   @override
   Future<Either<Failure, bool>> register(UserEntity user) async {
     if (await _networkInfo.isConnected) {
@@ -45,11 +46,17 @@ class AuthRepository implements IAuthRepository {
         await _remote.registerUser(apiModel);
         return const Right(true);
       } on DioException catch (e) {
+        String errorMessage = "Failed to register user!";
+        final messageData = e.response?.data['message'];
+        if (messageData != null) {
+          if (messageData is String) {
+            errorMessage = messageData;
+          } else if (messageData is List && messageData.isNotEmpty) {
+            errorMessage = messageData.first.toString();
+          }
+        }
         return Left(
-          ApiFailure(
-            statusCode: e.response?.statusCode,
-            message: e.response?.data['message'] ?? "Failed to register user!",
-          ),
+          ApiFailure(statusCode: e.response?.statusCode, message: errorMessage),
         );
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -77,6 +84,7 @@ class AuthRepository implements IAuthRepository {
     }
   }
 
+  /// Login user
   @override
   Future<Either<Failure, UserEntity>> login(
     String email,
@@ -85,14 +93,22 @@ class AuthRepository implements IAuthRepository {
     if (await _networkInfo.isConnected) {
       try {
         final userModel = await _remote.loginUser(email, password);
-        if (userModel != null) return Right(userModel.toEntity());
+        if (userModel != null) {
+          return Right(userModel.toEntity());
+        }
         return const Left(ApiFailure(message: "Invalid email or password"));
       } on DioException catch (e) {
+        String errorMessage = "Failed to login user!";
+        final messageData = e.response?.data['message'];
+        if (messageData != null) {
+          if (messageData is String) {
+            errorMessage = messageData;
+          } else if (messageData is List && messageData.isNotEmpty) {
+            errorMessage = messageData.first.toString();
+          }
+        }
         return Left(
-          ApiFailure(
-            statusCode: e.response?.statusCode,
-            message: e.response?.data['message'] ?? "Failed to login user!",
-          ),
+          ApiFailure(statusCode: e.response?.statusCode, message: errorMessage),
         );
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -110,6 +126,7 @@ class AuthRepository implements IAuthRepository {
     }
   }
 
+  /// Get current user
   @override
   Future<Either<Failure, UserEntity?>> getCurrentUser() async {
     if (await _networkInfo.isConnected) {
@@ -139,6 +156,7 @@ class AuthRepository implements IAuthRepository {
     }
   }
 
+  /// Logout user
   @override
   Future<Either<Failure, bool>> logout() async {
     if (await _networkInfo.isConnected) {
