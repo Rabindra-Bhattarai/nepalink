@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 // import 'package:nepalink/screens/button_screen/about_screen.dart';
 // import 'package:nepalink/screens/button_screen/card_screen.dart';
 import 'package:nepalink/features/button_screen/home_screen.dart';
-import 'package:nepalink/features/button_screen/profile_screen.dart';
+import 'package:nepalink/features/dashboard/presentation/pages/profile_screen.dart';
 
 class ButtonNavigationScreen extends StatefulWidget {
   const ButtonNavigationScreen({super.key});

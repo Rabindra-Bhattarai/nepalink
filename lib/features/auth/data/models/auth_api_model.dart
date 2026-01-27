@@ -6,6 +6,7 @@ class UserApiModel {
   final String email;
   final String phone;
   final String? password;
+  final String? profilePic;
   final String? token; // <-- capture JWT
 
   UserApiModel({
@@ -14,12 +15,19 @@ class UserApiModel {
     required this.email,
     required this.phone,
     this.password,
+    this.profilePic,
     this.token,
   });
 
   /// Convert API model to JSON (for sending data to server)
   Map<String, dynamic> toJson() {
-    return {"name": name, "email": email, "phone": phone, "password": password};
+    return {
+      "name": name,
+      "email": email,
+      "phone": phone,
+      "password": password,
+      "profilePic": profilePic,
+    };
   }
 
   /// For registration responses (direct user JSON)
@@ -30,6 +38,7 @@ class UserApiModel {
       email: json['email'] as String,
       phone: json['phone'] as String,
       password: json['password'] as String?,
+      profilePic: json['profilePic'] as String?,
     );
   }
 
@@ -41,6 +50,8 @@ class UserApiModel {
       name: userJson['name'] as String,
       email: userJson['email'] as String,
       phone: userJson['phone'] as String,
+      password: userJson['password'] as String?,
+      profilePic: userJson['imageUrl'] as String?,
       token: json['token'] as String?, // ✅ capture JWT
     );
   }
@@ -53,6 +64,7 @@ class UserApiModel {
       email: email,
       phone: phone,
       password: password ?? '',
+      profilePic: profilePic,
       token: token, // ✅ now valid because UserEntity has token
     );
   }
@@ -65,6 +77,7 @@ class UserApiModel {
       email: entity.email,
       phone: entity.phone,
       password: entity.password,
+      profilePic: entity.profilePic,
       token: entity.token, // ✅ now valid
     );
   }
