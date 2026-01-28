@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:nepalink/core/api/api_endpoints.dart';
 import 'package:nepalink/core/services/storage/user_session_service.dart';
 import 'package:nepalink/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:nepalink/features/auth/domain/usecases/upload_profile_image_usecase.dart';
@@ -21,9 +20,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _pickImage(BuildContext context) async {
     final status = await Permission.photos.request();
     if (!status.isGranted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Permission denied")));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Permission denied")));
+      }
       return;
     }
 
@@ -31,36 +32,45 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() => _profileImage = File(image.path));
+    }
+  }
 
-      // ✅ Upload to backend via use case
-      final userId = ref.read(userSessionServiceProvider).getCurrentUserId();
-      if (userId != null) {
-        final result = await ref
-            .read(uploadProfileImageUsecaseProvider)
-            .call(userId, File(image.path));
+  Future<void> _saveImage(BuildContext context) async {
+    if (_profileImage == null) return;
 
-        result.fold(
-          (failure) {
+    final userId = ref.read(userSessionServiceProvider).getCurrentUserId();
+    if (userId != null) {
+      final result = await ref
+          .read(uploadProfileImageUsecaseProvider)
+          .call(userId, _profileImage!);
+
+      result.fold(
+        (failure) {
+          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("Upload failed: ${failure.message}")),
             );
-          },
-          (updatedUser) async {
-            // ✅ Update session with new profilePic
+          }
+        },
+        (updatedUser) async {
+          if (updatedUser.profilePic != null &&
+              updatedUser.profilePic!.isNotEmpty) {
             await ref
                 .read(userSessionServiceProvider)
-                .updateProfilePic(updatedUser.profilePic ?? '');
+                .updateProfilePic(updatedUser.profilePic!);
+          }
 
-            setState(() {
-              _profileImage = null; // clear local file, rely on server URL
-            });
+          setState(() {
+            _profileImage = null; // clear local file, reload from session
+          });
 
+          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Profile photo updated!")),
+              const SnackBar(content: Text("Profile photo saved!")),
             );
-          },
-        );
-      }
+          }
+        },
+      );
     }
   }
 
@@ -88,13 +98,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 backgroundImage: _profileImage != null
                     ? FileImage(_profileImage!)
                     : (savedPic != null && savedPic.isNotEmpty
-                          ? NetworkImage("${ApiEndpoints.baseUrl}$savedPic")
+                          ? NetworkImage(
+                              "http://10.125.49.214:3000/uploads/$savedPic", //  fixed path
+                            )
                           : const AssetImage(
                                   'assets/images/profile_placeholder.png',
                                 )
                                 as ImageProvider),
               ),
             ),
+            const SizedBox(height: 12),
+
+            if (_profileImage != null)
+              ElevatedButton(
+                onPressed: () => _saveImage(context),
+                child: const Text("Save"),
+              ),
+
             const SizedBox(height: 16),
             Text(
               sessionService.getCurrentUserName() ?? "Unknown User",
@@ -149,18 +169,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 final result = await ref.read(logoutUsecaseProvider)();
                 result.fold(
                   (failure) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(failure.message)));
+                    if (mounted) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(failure.message)));
+                    }
                   },
                   (success) async {
                     if (success) {
                       await ref.read(userSessionServiceProvider).clearSession();
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        '/login',
-                        (route) => false,
-                      );
+                      if (mounted) {
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/login',
+                          (route) => false,
+                        );
+                      }
                     }
                   },
                 );

@@ -109,16 +109,17 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
   }
 
   ///  Upload profile image
+  @override
   Future<UserApiModel?> uploadProfileImage(String userId, File photo) async {
     final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(
+      'photo': await MultipartFile.fromFile(
         photo.path,
         filename: photo.path.split('/').last,
       ),
     });
 
     final response = await _apiClient.post(
-      ApiEndpoints.userUpload(userId), // "/api/user/$userId/upload"
+      ApiEndpoints.userUpload(userId),
       data: formData,
     );
 
@@ -132,12 +133,13 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
         email: updatedUser.email,
         phone: updatedUser.phone,
         password: updatedUser.password ?? '',
-        profilePic: updatedUser.profilePic,
+        profilePic: updatedUser.profilePic, // ✅ just filename
         token: _userSessionService.getToken(),
       );
 
       return updatedUser;
     }
+
     return null;
   }
 }

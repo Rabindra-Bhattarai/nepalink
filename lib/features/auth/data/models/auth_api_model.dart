@@ -6,8 +6,8 @@ class UserApiModel {
   final String email;
   final String phone;
   final String? password;
-  final String? profilePic;
-  final String? token; // <-- capture JWT
+  final String? profilePic; // maps backend imageUrl
+  final String? token; // capture JWT
 
   UserApiModel({
     this.id,
@@ -26,7 +26,7 @@ class UserApiModel {
       "email": email,
       "phone": phone,
       "password": password,
-      "profilePic": profilePic,
+      "imageUrl": profilePic, // backend expects imageUrl
     };
   }
 
@@ -38,7 +38,8 @@ class UserApiModel {
       email: json['email'] as String,
       phone: json['phone'] as String,
       password: json['password'] as String?,
-      profilePic: json['profilePic'] as String?,
+      profilePic: json['imageUrl'] as String?, //  map imageUrl
+      token: json['token'] as String?,
     );
   }
 
@@ -51,8 +52,8 @@ class UserApiModel {
       email: userJson['email'] as String,
       phone: userJson['phone'] as String,
       password: userJson['password'] as String?,
-      profilePic: userJson['imageUrl'] as String?,
-      token: json['token'] as String?, // ✅ capture JWT
+      profilePic: userJson['imageUrl'] as String?, // ✅ map imageUrl
+      token: json['token'] as String?,
     );
   }
 
@@ -64,8 +65,8 @@ class UserApiModel {
       email: email,
       phone: phone,
       password: password ?? '',
-      profilePic: profilePic,
-      token: token, // ✅ now valid because UserEntity has token
+      profilePic: profilePic, //  now consistent
+      token: token,
     );
   }
 
@@ -77,8 +78,8 @@ class UserApiModel {
       email: entity.email,
       phone: entity.phone,
       password: entity.password,
-      profilePic: entity.profilePic,
-      token: entity.token, // ✅ now valid
+      profilePic: entity.profilePic, //  consistent
+      token: entity.token,
     );
   }
 }

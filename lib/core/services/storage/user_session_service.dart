@@ -22,7 +22,7 @@ class UserSessionService {
   static const String _keyUserEmail = 'user_email';
   static const String _keyUserPhone = 'user_phone';
   static const String _keyUserPassword = 'user_password';
-  static const String _keyUserProfilePic = 'user_profile_pic';
+  static const String _keyUserProfilePic = 'user_profile_pic'; //  maps imageUrl
   static const String _keyUserToken = 'user_token';
 
   UserSessionService({required SharedPreferences prefs}) : _prefs = prefs;
@@ -34,7 +34,7 @@ class UserSessionService {
     required String email,
     required String phone,
     required String password,
-    String? profilePic,
+    String? profilePic, //  stores imageUrl filename
     String? token,
   }) async {
     await _prefs.setBool(_keyIsLoggedIn, true);
@@ -46,6 +46,8 @@ class UserSessionService {
 
     if (profilePic != null && profilePic.isNotEmpty) {
       await _prefs.setString(_keyUserProfilePic, profilePic);
+    } else {
+      await _prefs.setString(_keyUserProfilePic, "default-profile.png"); // ✅ fallback
     }
 
     if (token != null && token.isNotEmpty) {
@@ -74,7 +76,7 @@ class UserSessionService {
   String? getCurrentUserEmail() => _prefs.getString(_keyUserEmail);
   String? getCurrentUserPhone() => _prefs.getString(_keyUserPhone);
   String? getCurrentUserPassword() => _prefs.getString(_keyUserPassword);
-  String? getCurrentUserProfilePic() => _prefs.getString(_keyUserProfilePic);
+  String? getCurrentUserProfilePic() => _prefs.getString(_keyUserProfilePic); // ✅ returns imageUrl filename
   String? getToken() => _prefs.getString(_keyUserToken);
 
   /// Clear user session (logout)
