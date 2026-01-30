@@ -6,6 +6,7 @@ class UserEntity extends Equatable {
   final String email;
   final String phone;
   final String password;
+  final String? profilePic;
   final String? token;
 
   const UserEntity({
@@ -14,6 +15,7 @@ class UserEntity extends Equatable {
     required this.email,
     required this.phone,
     required this.password,
+    this.profilePic,
     this.token,
   });
 

@@ -39,6 +39,8 @@ class AuthLocalDatasource implements IAuthLocalDataSource {
         email: user.email,
         phone: user.phone,
         password: user.password,
+        profilePic: '',
+        token: '',
       );
       return user;
     } else {
@@ -46,7 +48,6 @@ class AuthLocalDatasource implements IAuthLocalDataSource {
       return null;
     }
   }
-
 
   @override
   Future<UserHiveModel?> getCurrentUser() async {

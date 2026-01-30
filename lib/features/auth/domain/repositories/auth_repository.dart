@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:nepalink/core/errors/failures.dart';
 import 'package:nepalink/features/auth/domain/entities/user_entity.dart';
@@ -7,4 +9,9 @@ abstract interface class IAuthRepository {
   Future<Either<Failure, UserEntity>> login(String email, String password);
   Future<Either<Failure, UserEntity?>> getCurrentUser();
   Future<Either<Failure, bool>> logout();
+
+  Future<Either<Failure, UserEntity>> uploadProfileImage(
+    String userId,
+    File photo,
+  );
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nepalink/core/api/api_client.dart';
 import 'package:nepalink/core/api/api_endpoints.dart';
@@ -54,6 +56,7 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
         phone: user.phone,
         password: '',
         token: user.token ?? '',
+        profilePic: user.profilePic ?? '',
       );
 
       return user;
@@ -82,6 +85,7 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
           name: currentUser.name,
           phone: currentUser.phone,
           password: '',
+          profilePic: currentUser.profilePic,
           token: _userSessionService.getToken() ?? '',
         );
 
@@ -102,5 +106,40 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
     } catch (_) {
       return false;
     }
+  }
+
+  ///  Upload profile image
+  @override
+  Future<UserApiModel?> uploadProfileImage(String userId, File photo) async {
+    final formData = FormData.fromMap({
+      'photo': await MultipartFile.fromFile(
+        photo.path,
+        filename: photo.path.split('/').last,
+      ),
+    });
+
+    final response = await _apiClient.post(
+      ApiEndpoints.userUpload(userId),
+      data: formData,
+    );
+
+    if (response.data['success'] == true) {
+      final data = response.data['data'] as Map<String, dynamic>;
+      final updatedUser = UserApiModel.fromJson(data);
+
+      await _userSessionService.saveUserSession(
+        userId: updatedUser.id ?? '',
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        password: updatedUser.password ?? '',
+        profilePic: updatedUser.profilePic, // ✅ just filename
+        token: _userSessionService.getToken(),
+      );
+
+      return updatedUser;
+    }
+
+    return null;
   }
 }

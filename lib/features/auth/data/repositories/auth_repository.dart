@@ -1,6 +1,7 @@
+import 'dart:io';
 import 'package:dartz/dartz.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nepalink/core/errors/failures.dart';
 import 'package:nepalink/core/services/connectivity/network_info.dart';
 import 'package:nepalink/features/auth/data/datasources/auth_datasource.dart';
@@ -11,7 +12,6 @@ import 'package:nepalink/features/auth/data/models/auth_api_model.dart';
 import 'package:nepalink/features/auth/domain/entities/user_entity.dart';
 import 'package:nepalink/features/auth/domain/repositories/auth_repository.dart';
 
-/// Provider for dependency injection
 final authRepositoryProvider = Provider<IAuthRepository>((ref) {
   final local = ref.read(authLocalDatasourceProvider);
   final remote = ref.read(authRemoteDataSourceProvider);
@@ -37,7 +37,7 @@ class AuthRepository implements IAuthRepository {
        _remote = remoteDataSource,
        _networkInfo = networkInfo;
 
-  /// Register user
+  // Register user
   @override
   Future<Either<Failure, bool>> register(UserEntity user) async {
     if (await _networkInfo.isConnected) {
@@ -84,7 +84,7 @@ class AuthRepository implements IAuthRepository {
     }
   }
 
-  /// Login user
+  // Login user
   @override
   Future<Either<Failure, UserEntity>> login(
     String email,
@@ -126,7 +126,7 @@ class AuthRepository implements IAuthRepository {
     }
   }
 
-  /// Get current user
+  //Get current user
   @override
   Future<Either<Failure, UserEntity?>> getCurrentUser() async {
     if (await _networkInfo.isConnected) {
@@ -156,7 +156,7 @@ class AuthRepository implements IAuthRepository {
     }
   }
 
-  /// Logout user
+  //Logout user
   @override
   Future<Either<Failure, bool>> logout() async {
     if (await _networkInfo.isConnected) {
@@ -182,6 +182,50 @@ class AuthRepository implements IAuthRepository {
       } catch (e) {
         return Left(LocalDatabaseFailure(message: e.toString()));
       }
+    }
+  }
+
+  //Upload profile image
+  Future<Either<Failure, UserEntity>> uploadProfileImage(
+    String userId,
+    File photo,
+  ) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final userModel = await (_remote as AuthRemoteDatasource)
+            .uploadProfileImage(userId, photo);
+        if (userModel != null) {
+          return Right(userModel.toEntity());
+        }
+        return const Left(ApiFailure(message: "Failed to upload image"));
+      } on DioException catch (e) {
+        return Left(
+          ApiFailure(
+            statusCode: e.response?.statusCode,
+            message: e.response?.data['message'] ?? "Upload failed",
+          ),
+        );
+      } catch (e) {
+        return Left(ApiFailure(message: e.toString()));
+      }
+    } else {
+      // Offline fallback: save local path in Hive
+      final hiveUser = await _local.getUserById(userId);
+      if (hiveUser != null) {
+        final updatedHiveUser = UserHiveModel(
+          userid: hiveUser.userid,
+          name: hiveUser.name,
+          email: hiveUser.email,
+          phone: hiveUser.phone,
+          password: hiveUser.password,
+          // TODO: add local path as profilePic if needed
+        );
+        await _local.updateUser(updatedHiveUser);
+        return Right(updatedHiveUser.toEntity());
+      }
+      return const Left(
+        LocalDatabaseFailure(message: "User not found offline"),
+      );
     }
   }
 }

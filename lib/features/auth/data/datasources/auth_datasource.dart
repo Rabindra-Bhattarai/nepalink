@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:nepalink/features/auth/data/models/auth_api_model.dart';
 import 'package:nepalink/features/auth/data/models/user_hive_model.dart';
 
@@ -17,4 +18,5 @@ abstract interface class IAuthRemoteDataSource {
   Future<UserApiModel?> loginUser(String email, String password);
   Future<UserApiModel?> getCurrentUser();
   Future<bool> logoutUser();
+  Future<UserApiModel?> uploadProfileImage(String userId, File photo);
 }

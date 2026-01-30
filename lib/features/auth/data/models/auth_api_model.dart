@@ -6,7 +6,8 @@ class UserApiModel {
   final String email;
   final String phone;
   final String? password;
-  final String? token; // <-- capture JWT
+  final String? profilePic; // maps backend imageUrl
+  final String? token; // capture JWT
 
   UserApiModel({
     this.id,
@@ -14,12 +15,19 @@ class UserApiModel {
     required this.email,
     required this.phone,
     this.password,
+    this.profilePic,
     this.token,
   });
 
   /// Convert API model to JSON (for sending data to server)
   Map<String, dynamic> toJson() {
-    return {"name": name, "email": email, "phone": phone, "password": password};
+    return {
+      "name": name,
+      "email": email,
+      "phone": phone,
+      "password": password,
+      "imageUrl": profilePic, // backend expects imageUrl
+    };
   }
 
   /// For registration responses (direct user JSON)
@@ -30,6 +38,8 @@ class UserApiModel {
       email: json['email'] as String,
       phone: json['phone'] as String,
       password: json['password'] as String?,
+      profilePic: json['imageUrl'] as String?, //  map imageUrl
+      token: json['token'] as String?,
     );
   }
 
@@ -41,7 +51,9 @@ class UserApiModel {
       name: userJson['name'] as String,
       email: userJson['email'] as String,
       phone: userJson['phone'] as String,
-      token: json['token'] as String?, // ✅ capture JWT
+      password: userJson['password'] as String?,
+      profilePic: userJson['imageUrl'] as String?, // ✅ map imageUrl
+      token: json['token'] as String?,
     );
   }
 
@@ -53,7 +65,8 @@ class UserApiModel {
       email: email,
       phone: phone,
       password: password ?? '',
-      token: token, // ✅ now valid because UserEntity has token
+      profilePic: profilePic, //  now consistent
+      token: token,
     );
   }
 
@@ -65,7 +78,8 @@ class UserApiModel {
       email: entity.email,
       phone: entity.phone,
       password: entity.password,
-      token: entity.token, // ✅ now valid
+      profilePic: entity.profilePic, //  consistent
+      token: entity.token,
     );
   }
 }

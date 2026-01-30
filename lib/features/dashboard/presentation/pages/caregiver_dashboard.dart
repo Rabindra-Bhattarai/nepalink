@@ -3,7 +3,7 @@ import 'package:nepalink/features/button_screen/home_screen.dart';
 import 'package:nepalink/features/button_screen/task_screen.dart';
 import 'package:nepalink/features/button_screen/caregiver_screen.dart';
 import 'package:nepalink/features/button_screen/location_screen.dart';
-import 'package:nepalink/features/button_screen/profile_screen.dart';
+import 'package:nepalink/features/dashboard/presentation/pages/profile_screen.dart';
 
 class CaregiverDashboard extends StatefulWidget {
   const CaregiverDashboard({super.key});
