@@ -1,22 +1,25 @@
 import 'package:nepalink/features/auth/domain/entities/user_entity.dart';
+//flutter pub run build_runner build
 
 class UserApiModel {
   final String? id;
   final String name;
   final String email;
-  final String phone;
+  final String? phone;
   final String? password;
   final String? profilePic; // maps backend imageUrl
   final String? token; // capture JWT
+  final String? role;
 
   UserApiModel({
     this.id,
     required this.name,
     required this.email,
-    required this.phone,
+    this.phone,
     this.password,
     this.profilePic,
     this.token,
+    this.role,
   });
 
   /// Convert API model to JSON (for sending data to server)
@@ -36,10 +39,11 @@ class UserApiModel {
       id: json['_id'] as String?,
       name: json['name'] as String,
       email: json['email'] as String,
-      phone: json['phone'] as String,
+      phone: json['phone'] as String?,
       password: json['password'] as String?,
       profilePic: json['imageUrl'] as String?, //  map imageUrl
       token: json['token'] as String?,
+      role: json['role'] as String?,
     );
   }
 
@@ -47,13 +51,14 @@ class UserApiModel {
   factory UserApiModel.fromLoginJson(Map<String, dynamic> json) {
     final userJson = json['data'] as Map<String, dynamic>;
     return UserApiModel(
-      id: userJson['_id'] as String?,
+      id: userJson['id'] as String?,
       name: userJson['name'] as String,
       email: userJson['email'] as String,
-      phone: userJson['phone'] as String,
+      phone: userJson['phone'] as String?,
       password: userJson['password'] as String?,
       profilePic: userJson['imageUrl'] as String?, // ✅ map imageUrl
       token: json['token'] as String?,
+      role: userJson['role'] as String?,
     );
   }
 
@@ -63,10 +68,11 @@ class UserApiModel {
       userid: id ?? '',
       name: name,
       email: email,
-      phone: phone,
+      phone: phone ?? '',
       password: password ?? '',
       profilePic: profilePic, //  now consistent
       token: token,
+      role: role ?? '',
     );
   }
 
@@ -80,6 +86,7 @@ class UserApiModel {
       password: entity.password,
       profilePic: entity.profilePic, //  consistent
       token: entity.token,
+      role: entity.role,
     );
   }
 }
