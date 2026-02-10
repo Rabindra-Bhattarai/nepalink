@@ -99,8 +99,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ? FileImage(_profileImage!)
                     : (savedPic != null && savedPic.isNotEmpty
                           ? NetworkImage(
-                              // "http://192.168.1.8:3000/uploads/$savedPic", //  fixed path
-                              "http://localhost:3000/uploads/$savedPic", //  fixed path
+                              "http://172.25.0.222:3000/uploads/$savedPic", //  fixed path
+                              //"http://localhost:3000/uploads/$savedPic", //  fixed path
                             )
                           : const AssetImage(
                                   'assets/images/profile_placeholder.png',
