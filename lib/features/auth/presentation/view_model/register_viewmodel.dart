@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:nepalink/features/auth/domain/usecases/register_usecase.dart';
+import 'package:nepalink/features/auth/domain/usecases/register_params.dart'; // ✅ import params separately
 import 'package:nepalink/features/auth/domain/entities/user_entity.dart';
 import 'package:nepalink/features/auth/presentation/state/register_state.dart';
 
@@ -15,8 +16,11 @@ class RegisterViewModel extends StateNotifier<RegisterState> {
       userid: user.userid,
       name: user.name,
       email: user.email,
-      phone: user.phone,
-      password: password,
+      phone: user.phone ?? '',
+      password: password.isNotEmpty ? password : (user.password ?? ''),
+      profilePic: user.profilePic,
+      token: user.token,
+      role: user.role ?? 'nurse',
     );
 
     final result = await _registerUsecase(params);
@@ -30,13 +34,11 @@ class RegisterViewModel extends StateNotifier<RegisterState> {
     );
   }
 
-  /// Reset state back to initial so user can register again
   void reset() {
     state = const RegisterState(status: RegisterStatus.initial);
   }
 }
 
-// Provider
 final registerViewModelProvider =
     StateNotifierProvider<RegisterViewModel, RegisterState>((ref) {
       final usecase = ref.read(registerUsecaseProvider);
