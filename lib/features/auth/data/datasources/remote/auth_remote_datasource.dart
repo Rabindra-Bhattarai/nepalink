@@ -53,10 +53,11 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
         userId: user.id ?? '',
         email: user.email,
         name: user.name,
-        phone: user.phone,
+        phone: user.phone ?? '', // fixed
         password: '',
         token: user.token ?? '',
         profilePic: user.profilePic ?? '',
+        role: user.role ?? 'nurse', // default nurse
       );
 
       return user;
@@ -83,10 +84,11 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
           userId: currentUser.id ?? '',
           email: currentUser.email,
           name: currentUser.name,
-          phone: currentUser.phone,
+          phone: currentUser.phone ?? '', // fixed
           password: '',
-          profilePic: currentUser.profilePic,
+          profilePic: currentUser.profilePic ?? '',
           token: _userSessionService.getToken() ?? '',
+          role: currentUser.role ?? 'nurse', // default nurse
         );
 
         return currentUser;
@@ -108,7 +110,6 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
     }
   }
 
-  ///  Upload profile image
   @override
   Future<UserApiModel?> uploadProfileImage(String userId, File photo) async {
     final formData = FormData.fromMap({
@@ -131,10 +132,11 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
         userId: updatedUser.id ?? '',
         name: updatedUser.name,
         email: updatedUser.email,
-        phone: updatedUser.phone,
+        phone: updatedUser.phone ?? '', // ✅ fixed
         password: updatedUser.password ?? '',
-        profilePic: updatedUser.profilePic, // ✅ just filename
-        token: _userSessionService.getToken(),
+        profilePic: updatedUser.profilePic ?? '',
+        token: _userSessionService.getToken() ?? '',
+        role: updatedUser.role ?? 'nurse', //  default nurse
       );
 
       return updatedUser;

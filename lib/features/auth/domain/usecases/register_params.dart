@@ -1,16 +1,16 @@
 import 'package:equatable/equatable.dart';
 
-class UserEntity extends Equatable {
+class RegisterParams extends Equatable {
   final String userid;
   final String name;
   final String email;
-  final String? phone;
-  final String? password;
+  final String phone;
+  final String password;
   final String? profilePic;
   final String? token;
   final String? role;
 
-  const UserEntity({
+  const RegisterParams({
     required this.userid,
     required this.name,
     required this.email,

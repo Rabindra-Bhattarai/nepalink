@@ -22,12 +22,24 @@ class UserHiveModel extends HiveObject {
   @HiveField(4)
   final String password;
 
+  @HiveField(5)
+  final String? profilePic;
+
+  @HiveField(6)
+  final String? token;
+
+  @HiveField(7)
+  final String? role;
+
   UserHiveModel({
     String? userid,
     required this.name,
     required this.email,
     required this.phone,
     required this.password,
+    this.profilePic,
+    this.token,
+    this.role,
   }) : userid = userid ?? const Uuid().v4();
 
   /// Convert Hive model to domain entity
@@ -38,6 +50,9 @@ class UserHiveModel extends HiveObject {
       email: email,
       phone: phone,
       password: password,
+      profilePic: profilePic,
+      token: token,
+      role: role,
     );
   }
 
@@ -47,8 +62,11 @@ class UserHiveModel extends HiveObject {
       userid: entity.userid,
       name: entity.name,
       email: entity.email,
-      phone: entity.phone,
-      password: entity.password,
+      phone: entity.phone ?? '',
+      password: entity.password ?? '',
+      profilePic: entity.profilePic ?? '',
+      token: entity.token ?? '',
+      role: entity.role ?? '',
     );
   }
 

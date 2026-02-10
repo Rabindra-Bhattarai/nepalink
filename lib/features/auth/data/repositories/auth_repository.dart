@@ -73,8 +73,11 @@ class AuthRepository implements IAuthRepository {
           userid: user.userid,
           name: user.name,
           email: user.email,
-          phone: user.phone,
-          password: user.password,
+          phone: user.phone ?? '', // safe default
+          password: user.password ?? '', // safe default
+          profilePic: user.profilePic, // nullable is fine
+          token: user.token, // nullable is fine
+          role: user.role, // nullable is fine
         );
         await _local.register(hiveModel);
         return const Right(true);
@@ -126,7 +129,7 @@ class AuthRepository implements IAuthRepository {
     }
   }
 
-  //Get current user
+  // Get current user
   @override
   Future<Either<Failure, UserEntity?>> getCurrentUser() async {
     if (await _networkInfo.isConnected) {
@@ -156,7 +159,7 @@ class AuthRepository implements IAuthRepository {
     }
   }
 
-  //Logout user
+  // Logout user
   @override
   Future<Either<Failure, bool>> logout() async {
     if (await _networkInfo.isConnected) {
@@ -185,7 +188,7 @@ class AuthRepository implements IAuthRepository {
     }
   }
 
-  //Upload profile image
+  // Upload profile image
   Future<Either<Failure, UserEntity>> uploadProfileImage(
     String userId,
     File photo,
@@ -209,16 +212,17 @@ class AuthRepository implements IAuthRepository {
         return Left(ApiFailure(message: e.toString()));
       }
     } else {
-      // Offline fallback: save local path in Hive
       final hiveUser = await _local.getUserById(userId);
       if (hiveUser != null) {
         final updatedHiveUser = UserHiveModel(
           userid: hiveUser.userid,
           name: hiveUser.name,
           email: hiveUser.email,
-          phone: hiveUser.phone,
-          password: hiveUser.password,
-          // TODO: add local path as profilePic if needed
+          phone: hiveUser.phone, // non‑nullable in Hive
+          password: hiveUser.password, // non‑nullable in Hive
+          profilePic: hiveUser.profilePic,
+          token: hiveUser.token,
+          role: hiveUser.role,
         );
         await _local.updateUser(updatedHiveUser);
         return Right(updatedHiveUser.toEntity());
