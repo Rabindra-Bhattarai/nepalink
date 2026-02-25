@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nepalink/features/auth/presentation/widgets/task_manager_widget.dart';
 
 class TaskPage extends StatelessWidget {
   const TaskPage({super.key});
@@ -7,5 +6,14 @@ class TaskPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(body: TaskManagerWidget());
+  }
+}
+
+class TaskManagerWidget extends StatelessWidget {
+  const TaskManagerWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text("Task Manager"));
   }
 }
