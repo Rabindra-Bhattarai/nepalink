@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//import 'package:nepalink/features/button_screen/home_screen.dart';
+import 'package:nepalink/features/button_screen/home_screen.dart';
 import 'package:nepalink/features/button_screen/task_page.dart';
 import 'package:nepalink/features/button_screen/chat_page.dart';
 import 'package:nepalink/features/button_screen/booking_page.dart';
@@ -16,7 +16,7 @@ class _CaregiverDashboardState extends State<CaregiverDashboard> {
   int _selectedIndex = 0;
 
   List<Widget> lstBottomScreen = [
-    //const HomeScreen(),
+    const HomeScreen(),
     const TaskPage(),
     const BookingPage(),
     const ChatPage(),
