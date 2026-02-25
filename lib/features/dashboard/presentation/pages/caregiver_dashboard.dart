@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nepalink/features/button_screen/home_screen.dart';
-import 'package:nepalink/features/button_screen/task_screen.dart';
-import 'package:nepalink/features/button_screen/caregiver_screen.dart';
-import 'package:nepalink/features/button_screen/location_screen.dart';
+import 'package:nepalink/features/button_screen/task_page.dart';
+import 'package:nepalink/features/button_screen/chat_page.dart';
+import 'package:nepalink/features/button_screen/booking_page.dart';
 import 'package:nepalink/features/dashboard/presentation/pages/profile_screen.dart';
 
 class CaregiverDashboard extends StatefulWidget {
@@ -17,9 +17,9 @@ class _CaregiverDashboardState extends State<CaregiverDashboard> {
 
   List<Widget> lstBottomScreen = [
     const HomeScreen(),
-    const TaskScreen(),
-    const LocationScreen(),
-    const CaregiverScreen(),
+    const TaskPage(),
+    const BookingPage(),
+    const ChatPage(),
     const ProfileScreen(),
   ];
 
@@ -68,9 +68,12 @@ class _CaregiverDashboardState extends State<CaregiverDashboard> {
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Task'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'location'),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Caregiver'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book_online),
+            label: 'Bookings',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Tasks'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         backgroundColor: Colors.blue,
