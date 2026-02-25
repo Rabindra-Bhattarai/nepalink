@@ -45,6 +45,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         email: _emailController.text.trim(),
         phone: '$_selectedCountryCode${_phoneController.text.trim()}',
         password: _passwordController.text.trim(),
+        profilePic: null,
+        token: null,
+        role: 'nurse',
       );
 
       ref
