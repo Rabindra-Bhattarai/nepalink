@@ -1,12 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
+import 'package:nepalink/features/dashboard/booking/data/booking_hive_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:nepalink/core/constants/hive_table_constants.dart';
 import 'package:nepalink/features/auth/data/models/user_hive_model.dart';
-
-final hiveServiceProvider = Provider<HiveService>((ref) {
-  return HiveService();
-});
 
 class HiveService {
   // init Hive
@@ -15,8 +11,10 @@ class HiveService {
     final path = '${directory.path}/${HiveTableConstant.dbName}';
     Hive.init(path);
 
-    // register adapter
+    // register adapters
     _registerAdapter();
+
+    // open boxes
     await _openBoxes();
   }
 
@@ -25,11 +23,15 @@ class HiveService {
     if (!Hive.isAdapterRegistered(HiveTableConstant.userTypeId)) {
       Hive.registerAdapter(UserHiveModelAdapter());
     }
+    if (!Hive.isAdapterRegistered(1)) {
+      Hive.registerAdapter(BookingHiveModelAdapter());
+    }
   }
 
   // open boxes
   Future<void> _openBoxes() async {
     await Hive.openBox<UserHiveModel>(HiveTableConstant.userTable);
+    await Hive.openBox<BookingHiveModel>('bookings'); // ✅ consistent name
   }
 
   // close Hive
@@ -42,13 +44,11 @@ class HiveService {
   Box<UserHiveModel> get _userBox =>
       Hive.box<UserHiveModel>(HiveTableConstant.userTable);
 
-  // Register user
   Future<UserHiveModel> register(UserHiveModel user) async {
     await _userBox.put(user.userid, user);
     return user;
   }
 
-  // Login - find user by email and password
   Future<UserHiveModel?> login(String email, String password) async {
     try {
       return _userBox.values.firstWhere(
@@ -61,12 +61,8 @@ class HiveService {
     }
   }
 
-  // Get user by ID
-  UserHiveModel? getUserById(String userid) {
-    return _userBox.get(userid);
-  }
+  UserHiveModel? getUserById(String userid) => _userBox.get(userid);
 
-  // Get user by email
   UserHiveModel? getUserByEmail(String email) {
     try {
       return _userBox.values.firstWhere((user) => user.email == email);
@@ -75,13 +71,11 @@ class HiveService {
     }
   }
 
-  // Get current user (first in box, or null)
   UserHiveModel? getCurrentUser() {
     if (_userBox.isEmpty) return null;
     return _userBox.values.first;
   }
 
-  // Update user
   Future<bool> updateUser(UserHiveModel user) async {
     if (_userBox.containsKey(user.userid)) {
       await _userBox.put(user.userid, user);
@@ -90,18 +84,22 @@ class HiveService {
     return false;
   }
 
-  // Delete user
   Future<void> deleteUser(String userid) async {
     await _userBox.delete(userid);
   }
 
-  // Logout (clear all users)
   Future<bool> logout() async {
     try {
-      //do not clear all users here
       return true;
     } catch (e) {
       return false;
     }
+  }
+
+  // ======================= Booking Queries =========================
+
+  /// Helper to access the booking box
+  Box<BookingHiveModel> getBookingBox() {
+    return Hive.box<BookingHiveModel>('bookings'); // ✅ consistent name
   }
 }
