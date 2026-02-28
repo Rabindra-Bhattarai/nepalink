@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:nepalink/core/providers/hive_provider.dart';
 import 'package:nepalink/core/services/hive/hive_service.dart';
 import 'package:nepalink/core/services/storage/user_session_service.dart';
 import 'package:nepalink/features/auth/data/datasources/auth_datasource.dart';
@@ -16,12 +18,13 @@ final authLocalDatasourceProvider = Provider<AuthLocalDatasource>((ref) {
 class AuthLocalDatasource implements IAuthLocalDataSource {
   final HiveService _hiveService;
   final UserSessionService _userSessionService;
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   AuthLocalDatasource({
     required HiveService hiveService,
     required UserSessionService userSessionService,
-  })  : _hiveService = hiveService,
-        _userSessionService = userSessionService;
+  }) : _hiveService = hiveService,
+       _userSessionService = userSessionService;
 
   @override
   Future<UserHiveModel> register(UserHiveModel user) async {
@@ -42,9 +45,16 @@ class AuthLocalDatasource implements IAuthLocalDataSource {
         token: user.token ?? '',
         role: user.role ?? '',
       );
+
+      // ✅ Save token securely for interceptor
+      if (user.token != null && user.token!.isNotEmpty) {
+        await _storage.write(key: 'auth_token', value: user.token!);
+      }
+
       return user;
     } else {
       await _userSessionService.clearSession();
+      await _storage.delete(key: 'auth_token'); // ✅ clear secure token
       return null;
     }
   }
@@ -63,6 +73,7 @@ class AuthLocalDatasource implements IAuthLocalDataSource {
     try {
       final hiveResult = await _hiveService.logout();
       await _userSessionService.clearSession();
+      await _storage.delete(key: 'auth_token'); // ✅ clear secure token
       return hiveResult;
     } catch (e) {
       return false;
