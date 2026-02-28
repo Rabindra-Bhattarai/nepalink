@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nepalink/core/api/api_client.dart';
 import 'package:nepalink/core/api/api_endpoints.dart';
 import 'package:nepalink/core/services/storage/user_session_service.dart';
@@ -17,6 +18,7 @@ final authRemoteDataSourceProvider = Provider<IAuthRemoteDataSource>((ref) {
 class AuthRemoteDatasource implements IAuthRemoteDataSource {
   final ApiClient _apiClient;
   final UserSessionService _userSessionService;
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   AuthRemoteDatasource({
     required ApiClient apiClient,
@@ -49,15 +51,21 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
     if (response.data['success'] == true) {
       final user = UserApiModel.fromLoginJson(response.data);
 
+      //  Save token securely for interceptor
+      if (user.token != null && user.token!.isNotEmpty) {
+        await _storage.write(key: 'auth_token', value: user.token!);
+      }
+
+      // Still save session in SharedPreferences
       await _userSessionService.saveUserSession(
         userId: user.id ?? '',
         email: user.email,
         name: user.name,
-        phone: user.phone ?? '', // fixed
+        phone: user.phone ?? '',
         password: '',
         token: user.token ?? '',
         profilePic: user.profilePic ?? '',
-        role: user.role ?? 'nurse', // default nurse
+        role: user.role ?? 'nurse',
       );
 
       return user;
@@ -84,11 +92,11 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
           userId: currentUser.id ?? '',
           email: currentUser.email,
           name: currentUser.name,
-          phone: currentUser.phone ?? '', // fixed
+          phone: currentUser.phone ?? '',
           password: '',
           profilePic: currentUser.profilePic ?? '',
           token: _userSessionService.getToken() ?? '',
-          role: currentUser.role ?? 'nurse', // default nurse
+          role: currentUser.role ?? 'nurse',
         );
 
         return currentUser;
@@ -104,6 +112,7 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
   Future<bool> logoutUser() async {
     try {
       await _userSessionService.clearSession();
+      await _storage.delete(key: 'auth_token'); // ✅ clear secure token
       return true;
     } catch (_) {
       return false;
@@ -132,11 +141,11 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
         userId: updatedUser.id ?? '',
         name: updatedUser.name,
         email: updatedUser.email,
-        phone: updatedUser.phone ?? '', // ✅ fixed
+        phone: updatedUser.phone ?? '',
         password: updatedUser.password ?? '',
         profilePic: updatedUser.profilePic ?? '',
         token: _userSessionService.getToken() ?? '',
-        role: updatedUser.role ?? 'nurse', //  default nurse
+        role: updatedUser.role ?? 'nurse',
       );
 
       return updatedUser;
