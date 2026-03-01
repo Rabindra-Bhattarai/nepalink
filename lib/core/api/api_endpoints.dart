@@ -9,7 +9,7 @@ class ApiEndpoints {
   ApiEndpoints._();
 
   static const bool isPhysicalDevice = true; // flip when needed
-  static const String compIpAddress = "192.168.1.6";
+  static const String compIpAddress = "10.238.15.214";
 
   static String get baseUrl {
     if (kIsWeb) {
