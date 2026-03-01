@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:nepalink/features/dashboard/booking/data/booking_hive_model.dart';
+import 'package:nepalink/features/dashboard/booking/data/models/booking_hive_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:nepalink/core/constants/hive_table_constants.dart';
 import 'package:nepalink/features/auth/data/models/user_hive_model.dart';
@@ -23,7 +23,7 @@ class HiveService {
     if (!Hive.isAdapterRegistered(HiveTableConstant.userTypeId)) {
       Hive.registerAdapter(UserHiveModelAdapter());
     }
-    if (!Hive.isAdapterRegistered(1)) {
+    if (!Hive.isAdapterRegistered(HiveTableConstant.bookingTypeId)) {
       Hive.registerAdapter(BookingHiveModelAdapter());
     }
   }
@@ -31,7 +31,7 @@ class HiveService {
   // open boxes
   Future<void> _openBoxes() async {
     await Hive.openBox<UserHiveModel>(HiveTableConstant.userTable);
-    await Hive.openBox<BookingHiveModel>('bookings'); // ✅ consistent name
+    await Hive.openBox<BookingHiveModel>(HiveTableConstant.bookingTable);
   }
 
   // close Hive
@@ -100,6 +100,6 @@ class HiveService {
 
   /// Helper to access the booking box
   Box<BookingHiveModel> getBookingBox() {
-    return Hive.box<BookingHiveModel>('bookings'); // ✅ consistent name
+    return Hive.box<BookingHiveModel>(HiveTableConstant.bookingTable);
   }
 }
