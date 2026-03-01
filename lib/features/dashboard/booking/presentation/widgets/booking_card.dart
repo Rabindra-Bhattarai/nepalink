@@ -1,36 +1,91 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/models/booking_model.dart';
-import '../providers/booking_provider.dart';
+import 'package:nepalink/features/dashboard/booking/domain/entities/booking_entity.dart';
 
-class BookingCard extends ConsumerWidget {
-  final BookingModel booking;
+class BookingCard extends StatelessWidget {
+  final BookingEntity booking;
+  final VoidCallback onAccept;
+  final VoidCallback onDecline;
 
-  const BookingCard({super.key, required this.booking});
+  const BookingCard({
+    super.key,
+    required this.booking,
+    required this.onAccept,
+    required this.onDecline,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(bookingProvider.notifier);
-
+  Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.all(8),
-      child: ListTile(
-        title: Text("Member: ${booking.member.name}"),
-        subtitle: Text("Date: ${booking.date.toLocal()}"),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
           children: [
-            IconButton(
-              icon: const Icon(Icons.check, color: Colors.green),
-              onPressed: () => notifier.acceptBooking(booking.id),
+            CircleAvatar(
+              radius: 30,
+              backgroundImage: booking.profilePic.isNotEmpty
+                  ? NetworkImage(booking.profilePic)
+                  : null,
+              child: booking.profilePic.isEmpty
+                  ? const Icon(Icons.person, size: 30)
+                  : null,
             ),
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.red),
-              onPressed: () => notifier.declineBooking(booking.id),
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    booking.memberName,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    booking.memberPhone,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                  Text(
+                    "Date: ${booking.bookingDate.toLocal()}",
+                    style: const TextStyle(color: Colors.black87),
+                  ),
+                  const SizedBox(height: 6),
+                  Chip(
+                    label: Text(booking.status.toUpperCase()),
+                    backgroundColor: _statusColor(booking.status),
+                  ),
+                ],
+              ),
             ),
+
+            if (booking.status == 'pending') ...[
+              IconButton(
+                icon: const Icon(Icons.check_circle, color: Colors.green),
+                onPressed: onAccept,
+              ),
+              IconButton(
+                icon: const Icon(Icons.cancel, color: Colors.red),
+                onPressed: onDecline,
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'accepted':
+        return Colors.green.shade200;
+      case 'declined':
+        return Colors.red.shade200;
+      case 'cancelled':
+        return Colors.grey.shade300;
+      default:
+        return Colors.orange.shade200; // pending
+    }
   }
 }
