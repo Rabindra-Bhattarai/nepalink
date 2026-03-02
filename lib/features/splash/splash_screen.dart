@@ -26,7 +26,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (isLoggedIn) {
       // 🚀 User already logged in → go to dashboard
 
-      Navigator.pushReplacementNamed(context, '/booking');
+      Navigator.pushReplacementNamed(context, '/dashboard');
     } else {
       Navigator.pushReplacementNamed(context, '/onboarding');
     }
