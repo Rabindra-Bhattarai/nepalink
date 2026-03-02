@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nepalink/features/Navigation/button_navigation_screen.dart';
+import 'package:nepalink/features/dashboard/navigation/button_navigation_screen.dart';
 // import 'package:nepalink/features/dashboard/presentation/pages/caregiver_dashboard.dart';
 
 import '../features/splash/splash_screen.dart';
