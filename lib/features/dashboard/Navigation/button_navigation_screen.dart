@@ -1,9 +1,10 @@
+// import 'package:flutter/material.dart';
+// import 'package:nepalink/features/home/home_screen.dart';
+// import 'package:nepalink/features/tasks/task_page.dart';
+// import 'package:nepalink/features/chat/chat_page.dart';
 import 'package:flutter/material.dart';
-import 'package:nepalink/features/button_screen/chat_page.dart';
-import 'package:nepalink/features/button_screen/home_screen.dart';
-import 'package:nepalink/features/button_screen/task_page.dart';
-import 'package:nepalink/features/dashboard/booking/presentation/pages/booking_page.dart'; // ✅ real booking UI
-import 'package:nepalink/features/dashboard/presentation/pages/profile_screen.dart';
+import 'package:nepalink/features/dashboard/booking/presentation/pages/booking_page.dart'; // ✅ real nurse booking UI
+import 'package:nepalink/features/dashboard/presentation/pages/profile_screen.dart'; // ✅ Profile feature
 
 class ButtonNavigationScreen extends StatefulWidget {
   const ButtonNavigationScreen({super.key});
@@ -17,10 +18,10 @@ class _ButtonNavigationScreenState extends State<ButtonNavigationScreen> {
 
   // Screens for each tab
   final List<Widget> lstBottomScreen = [
-    const HomeScreen(),
-    const BookingPage(), // ✅ nurse booking UI with ViewModel/state
-    const TaskPage(),
-    const ChatPage(),
+    // const HomeScreen(),
+    const BookingPage(), //  nurse booking UI with ViewModel/state
+    // const TaskPage(),
+    // const ChatPage(),
     const ProfileScreen(),
   ];
 
@@ -41,9 +42,9 @@ class _ButtonNavigationScreenState extends State<ButtonNavigationScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
-        backgroundColor: Colors.amber,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.blue,
+        backgroundColor: Colors.blue, //  consistent dashboard theme
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.white,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
