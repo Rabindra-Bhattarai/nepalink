@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nepalink/features/Navigation/button_navigation_screen.dart';
 // import 'package:nepalink/features/dashboard/presentation/pages/caregiver_dashboard.dart';
 
 import '../features/splash/splash_screen.dart';
@@ -26,7 +27,7 @@ class NepalinkApp extends ConsumerWidget {
         '/onboarding': (_) => const OnboardingScreen(),
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
-        // 'caregiver-dashboard': (_) => const CaregiverDashboard(),
+        '/dashboard': (_) => const ButtonNavigationScreen(),
         '/booking': (_) => const BookingPage(),
       },
     );
