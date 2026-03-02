@@ -32,7 +32,6 @@ class BookingPage extends ConsumerWidget {
     final viewModel = ref.read(bookingViewModelProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Nurse Bookings")),
       body: RefreshIndicator(
         onRefresh: () async {
           await viewModel.loadBookings(
