@@ -31,7 +31,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     ref.listen<LoginState>(loginViewModelProvider, (prev, next) {
       if (next.status == LoginStatus.success) {
-        Navigator.pushReplacementNamed(context, '/caregiverDashboard');
+        Navigator.pushReplacementNamed(context, '/dashboard');
       } else if (next.status == LoginStatus.failure &&
           next.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(

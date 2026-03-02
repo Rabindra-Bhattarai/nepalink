@@ -26,7 +26,8 @@ class ApiClient {
       ),
     );
 
-    _dio.interceptors.add(_AuthInterceptor());
+    // ✅ Attach AuthInterceptor
+    _dio.interceptors.add(AuthInterceptor());
 
     // Auto retry on network failures
     _dio.interceptors.add(
@@ -39,7 +40,6 @@ class ApiClient {
           Duration(seconds: 3),
         ],
         retryEvaluator: (error, attempt) {
-          // Retry on connection errors and timeouts, not on 4xx/5xx
           return error.type == DioExceptionType.connectionTimeout ||
               error.type == DioExceptionType.sendTimeout ||
               error.type == DioExceptionType.receiveTimeout ||
@@ -129,8 +129,8 @@ class ApiClient {
   }
 }
 
-class _AuthInterceptor extends Interceptor {
-  final _storage = const FlutterSecureStorage();
+class AuthInterceptor extends Interceptor {
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
   static const String _tokenKey = 'auth_token';
 
   @override
@@ -138,20 +138,19 @@ class _AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
+    // Public endpoints should not require token
     final publicEndpoints = [ApiEndpoints.userLogin, ApiEndpoints.userSignup];
+    final isPublic = publicEndpoints.any(
+      (endpoint) => options.path.startsWith(endpoint),
+    );
 
-    final isPublicGet =
-        options.method == 'GET' &&
-        publicEndpoints.any((endpoint) => options.path.startsWith(endpoint));
-
-    final isAuthEndpoint =
-        options.path == ApiEndpoints.userLogin ||
-        options.path == ApiEndpoints.userSignup;
-
-    if (!isPublicGet && !isAuthEndpoint) {
+    if (!isPublic) {
       final token = await _storage.read(key: _tokenKey);
-      if (token != null) {
+      if (token != null && token.isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $token';
+        if (kDebugMode) {
+          print("AuthInterceptor attaching token: $token");
+        }
       }
     }
 
@@ -161,6 +160,7 @@ class _AuthInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.response?.statusCode == 401) {
+      // ✅ Clear token on unauthorized
       _storage.delete(key: _tokenKey);
     }
     handler.next(err);

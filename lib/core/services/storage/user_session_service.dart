@@ -22,7 +22,7 @@ class UserSessionService {
   static const String _keyUserEmail = 'user_email';
   static const String _keyUserPhone = 'user_phone';
   static const String _keyUserPassword = 'user_password';
-  static const String _keyUserProfilePic = 'user_profile_pic'; //  maps imageUrl
+  static const String _keyUserProfilePic = 'user_profile_pic'; // maps imageUrl
   static const String _keyUserToken = 'user_token';
   static const String _keyUserRole = 'user_role';
 
@@ -35,7 +35,7 @@ class UserSessionService {
     required String email,
     required String phone,
     required String password,
-    String? profilePic, //  stores imageUrl filename
+    String? profilePic, // stores imageUrl filename
     String? token,
     String? role,
   }) async {
@@ -46,17 +46,22 @@ class UserSessionService {
     await _prefs.setString(_keyUserPhone, phone);
     await _prefs.setString(_keyUserPassword, password);
 
-    if (profilePic != null && profilePic.isNotEmpty) {
-      await _prefs.setString(_keyUserProfilePic, profilePic);
-    } else {
-      await _prefs.setString(
-        _keyUserProfilePic,
-        "default-profile.png",
-      ); // ✅ fallback
-    }
+    // Profile picture fallback
+    await _prefs.setString(
+      _keyUserProfilePic,
+      (profilePic != null && profilePic.isNotEmpty)
+          ? profilePic
+          : "default-profile.png",
+    );
 
+    // Token
     if (token != null && token.isNotEmpty) {
       await _prefs.setString(_keyUserToken, token);
+    }
+
+    // ✅ Role (this was missing before)
+    if (role != null && role.isNotEmpty) {
+      await _prefs.setString(_keyUserRole, role);
     }
   }
 
@@ -70,6 +75,11 @@ class UserSessionService {
     await _prefs.setString(_keyUserToken, token);
   }
 
+  /// Update only role
+  Future<void> updateRole(String role) async {
+    await _prefs.setString(_keyUserRole, role);
+  }
+
   /// Check if user is logged in
   bool isLoggedIn() {
     return _prefs.getBool(_keyIsLoggedIn) ?? false;
@@ -81,8 +91,7 @@ class UserSessionService {
   String? getCurrentUserEmail() => _prefs.getString(_keyUserEmail);
   String? getCurrentUserPhone() => _prefs.getString(_keyUserPhone);
   String? getCurrentUserPassword() => _prefs.getString(_keyUserPassword);
-  String? getCurrentUserProfilePic() =>
-      _prefs.getString(_keyUserProfilePic); // ✅ returns imageUrl filename
+  String? getCurrentUserProfilePic() => _prefs.getString(_keyUserProfilePic);
   String? getToken() => _prefs.getString(_keyUserToken);
   String? getRole() => _prefs.getString(_keyUserRole);
 
