@@ -15,4 +15,8 @@ class HiveTableConstant {
   // Booking
   static const int bookingTypeId = 2;
   static const String bookingTable = "booking_table";
+
+  //Task/Activity
+  static const int taskTypeId = 3;
+  static const String taskTable = "task_table";
 }
