@@ -1,15 +1,13 @@
-// import 'dart:io';
-
-// import 'package:flutter/foundation.dart';
-
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 class ApiEndpoints {
   ApiEndpoints._();
 
-  static const bool isPhysicalDevice = true; // flip when needed
-  static const String compIpAddress = "10.221.76.214";
+  // Flip this flag depending on whether you're testing on a physical device or emulator
+  static const bool isPhysicalDevice = true;
+  static const String compIpAddress =
+      "10.238.15.214"; // your PC IP for physical device
 
   static String get baseUrl {
     if (kIsWeb) {
@@ -26,24 +24,36 @@ class ApiEndpoints {
     }
   }
 
-  // static const bool isPhysicalDevice = true; // flip when needed
-  // static const String compIpAddress = "172.25.0.222";
-
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
 
-  // Auth Endpoints
+  // ====================== Auth Endpoints ======================
   static const String userSignup = '/auth/register';
   static const String userLogin = '/auth/login';
 
-  // User Endpoints
+  // ====================== User Endpoints ======================
   static const String user = '/users';
   static String userById(String id) => '/users/$id';
   static String userUpload(String id) => '/users/$id/upload';
 
-  // Booking Endpoints
+  // ====================== Booking Endpoints ======================
   static const String bookings = '/bookings';
   static String bookingAccept(String id) => '/bookings/$id/accept';
   static String bookingDecline(String id) => '/bookings/$id/decline';
   static String bookingCancel(String id) => '/bookings/$id/cancel';
+
+  // ====================== Task / Activity Endpoints ======================
+  static const String activities = '/activities';
+
+  // Nurse: fetch assigned activities
+  static const String activitiesAssigned = '/activities/assigned';
+
+  // Member: fetch own activities
+  static const String activitiesMy = '/activities/my';
+
+  // Create new activity (task)
+  static const String activityCreate = '/activities';
+
+  // Update activity status
+  static String activityUpdateStatus(String id) => '/activities/$id/status';
 }

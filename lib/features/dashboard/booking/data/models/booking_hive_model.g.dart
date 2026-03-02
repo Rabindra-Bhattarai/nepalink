@@ -8,7 +8,7 @@ part of 'booking_hive_model.dart';
 
 class BookingHiveModelAdapter extends TypeAdapter<BookingHiveModel> {
   @override
-  final int typeId = 1;
+  final int typeId = 2;
 
   @override
   BookingHiveModel read(BinaryReader reader) {
