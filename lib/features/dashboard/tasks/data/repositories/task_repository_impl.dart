@@ -14,7 +14,6 @@ final taskRepositoryProvider = Provider<ITaskRepository>((ref) {
   final local = ref.read(taskLocalDataSourceProvider);
   final remote = ref.read(taskRemoteDataSourceProvider);
   final networkInfo = ref.read(networkInfoProvider);
-
   return TaskRepositoryImpl(
     localDataSource: local,
     remoteDataSource: remote,
@@ -133,6 +132,27 @@ class TaskRepositoryImpl implements ITaskRepository {
         );
         await _local.saveTask(updatedHiveTask);
         return Right(updatedHiveTask.toEntity());
+      } catch (e) {
+        return Left(LocalDatabaseFailure(message: e.toString()));
+      }
+    }
+  }
+
+  //  Delete task — tries remote first, always cleans local cache too
+  @override
+  Future<Either<Failure, bool>> deleteTask(String taskId) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        await _remote.deleteTask(taskId);
+        await _local.deleteTask(taskId); // keep local in sync
+        return const Right(true);
+      } catch (e) {
+        return Left(ApiFailure(message: e.toString()));
+      }
+    } else {
+      try {
+        await _local.deleteTask(taskId);
+        return const Right(true);
       } catch (e) {
         return Left(LocalDatabaseFailure(message: e.toString()));
       }
