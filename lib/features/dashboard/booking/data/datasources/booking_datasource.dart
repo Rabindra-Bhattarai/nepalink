@@ -8,6 +8,6 @@ abstract interface class IBookingLocalDataSource {
 
 abstract interface class IBookingRemoteDataSource {
   Future<List<BookingEntity>> getBookingsForNurse();
-  Future<BookingEntity> acceptBooking(String bookingId);
+  Future<Map<String, dynamic>> acceptBooking(String bookingId);
   Future<BookingEntity> declineBooking(String bookingId);
 }
