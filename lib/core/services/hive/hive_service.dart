@@ -1,3 +1,5 @@
+// lib/core/services/hive/hive_service.dart
+
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:nepalink/core/constants/hive_table_constants.dart';
@@ -5,10 +7,10 @@ import 'package:nepalink/features/auth/data/models/user_hive_model.dart';
 import 'package:nepalink/features/dashboard/booking/data/models/booking_hive_model.dart';
 import 'package:nepalink/features/dashboard/tasks/data/models/task_hive_model.dart';
 import 'package:nepalink/features/dashboard/chat/data/models/chat_hive_model.dart';
-import 'package:nepalink/features/dashboard/home/data/models/activity_hive_model.dart'; // ← new
+import 'package:nepalink/features/dashboard/home/data/models/activity_hive_model.dart';
+import 'package:nepalink/features/dashboard/profile/data/models/profile_hive_model.dart'; // ✅
 
 class HiveService {
-  /// Initialize Hive with a custom path and open all required boxes
   Future<void> init() async {
     final directory = await getApplicationDocumentsDirectory();
     final path = '${directory.path}/${HiveTableConstant.dbName}';
@@ -18,7 +20,6 @@ class HiveService {
     await _openBoxes();
   }
 
-  /// Register Hive adapters for each model
   void _registerAdapter() {
     if (!Hive.isAdapterRegistered(HiveTableConstant.userTypeId)) {
       Hive.registerAdapter(UserHiveModelAdapter());
@@ -32,24 +33,24 @@ class HiveService {
     if (!Hive.isAdapterRegistered(HiveTableConstant.chatTypeId)) {
       Hive.registerAdapter(ChatHiveModelAdapter());
     }
-    // ← new
     if (!Hive.isAdapterRegistered(HiveTableConstant.activityTypeId)) {
       Hive.registerAdapter(ActivityHiveModelAdapter());
     }
+    // ✅ Profile
+    if (!Hive.isAdapterRegistered(HiveTableConstant.profileTypeId)) {
+      Hive.registerAdapter(ProfileHiveModelAdapter());
+    }
   }
 
-  /// Open all the Hive boxes we need
   Future<void> _openBoxes() async {
     await Hive.openBox<UserHiveModel>(HiveTableConstant.userTable);
     await Hive.openBox<BookingHiveModel>(HiveTableConstant.bookingTable);
     await Hive.openBox<TaskHiveModel>(HiveTableConstant.taskTable);
     await Hive.openBox<ChatHiveModel>(HiveTableConstant.chatTable);
-    await Hive.openBox<ActivityHiveModel>(
-      HiveTableConstant.activityTable,
-    ); // ← new
+    await Hive.openBox<ActivityHiveModel>(HiveTableConstant.activityTable);
+    await Hive.openBox<ProfileHiveModel>(HiveTableConstant.profileTable); // ✅
   }
 
-  /// Close Hive completely
   Future<void> close() async {
     await Hive.close();
   }
@@ -179,5 +180,24 @@ class HiveService {
 
   Future<void> clearActivities() async {
     await getActivityBox().clear();
+  }
+
+  // ======================= Profile Queries =========================
+
+  Box<ProfileHiveModel> getProfileBox() {
+    return Hive.box<ProfileHiveModel>(HiveTableConstant.profileTable);
+  }
+
+  Future<void> saveProfile(ProfileHiveModel profile) async {
+    await getProfileBox().put(profile.id, profile);
+  }
+
+  ProfileHiveModel? getProfile() {
+    final box = getProfileBox();
+    return box.values.isNotEmpty ? box.values.first : null;
+  }
+
+  Future<void> clearProfile() async {
+    await getProfileBox().clear();
   }
 }

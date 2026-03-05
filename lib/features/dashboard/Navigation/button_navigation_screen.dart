@@ -4,11 +4,11 @@ import 'package:nepalink/features/dashboard/chat/presentation/screens/chat_tab.d
 import 'package:nepalink/features/dashboard/home/presentation/pages/home_page.dart';
 import 'package:nepalink/features/dashboard/tasks/presentation/pages/task_page.dart';
 import 'package:nepalink/features/dashboard/booking/presentation/pages/booking_page.dart';
-import 'package:nepalink/features/dashboard/presentation/pages/profile_screen.dart';
+import 'package:nepalink/features/dashboard/profile/presentation/pages/profile_screen.dart';
 import 'package:nepalink/features/dashboard/notification/presentation/widgets/notification_bell.dart';
 import 'package:nepalink/features/dashboard/notification/presentation/view_model/notification_view_model.dart';
 
-// ✅ Changed from StatefulWidget to ConsumerStatefulWidget
+//  Changed from StatefulWidget to ConsumerStatefulWidget
 class ButtonNavigationScreen extends ConsumerStatefulWidget {
   const ButtonNavigationScreen({super.key});
 
@@ -17,7 +17,7 @@ class ButtonNavigationScreen extends ConsumerStatefulWidget {
       _ButtonNavigationScreenState();
 }
 
-// ✅ Changed from State to ConsumerState
+//  Changed from State to ConsumerState
 class _ButtonNavigationScreenState
     extends ConsumerState<ButtonNavigationScreen> {
   int _selectedIndex = 0;
@@ -45,7 +45,7 @@ class _ButtonNavigationScreenState
   @override
   void initState() {
     super.initState();
-    // ✅ Load notifications after first frame so token is ready
+    //  Load notifications after first frame so token is ready
     Future.microtask(() {
       ref.read(notificationViewModelProvider.notifier).loadNotifications();
     });
