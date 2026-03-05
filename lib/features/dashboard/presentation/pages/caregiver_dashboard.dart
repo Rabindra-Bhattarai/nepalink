@@ -4,6 +4,7 @@ import 'package:nepalink/features/button_screen/task_page.dart';
 import 'package:nepalink/features/button_screen/chat_page.dart';
 import 'package:nepalink/features/button_screen/booking_page.dart';
 import 'package:nepalink/features/dashboard/presentation/pages/profile_screen.dart';
+import 'package:nepalink/features/dashboard/notification/presentation/widgets/notification_bell.dart'; // ✅ added
 
 class CaregiverDashboard extends StatefulWidget {
   const CaregiverDashboard({super.key});
@@ -25,7 +26,7 @@ class _CaregiverDashboardState extends State<CaregiverDashboard> {
 
   void _refreshPage() {
     setState(() {
-      _selectedIndex = 0; // reset to Home tab
+      _selectedIndex = 0;
     });
   }
 
@@ -57,10 +58,9 @@ class _CaregiverDashboardState extends State<CaregiverDashboard> {
             icon: const Icon(Icons.settings, color: Colors.white),
             onPressed: () {},
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {},
-          ),
+          // ✅ Replaced plain IconButton with NotificationBell
+          // Shows red badge with unread count automatically
+          const NotificationBell(),
         ],
       ),
       body: lstBottomScreen[_selectedIndex],
