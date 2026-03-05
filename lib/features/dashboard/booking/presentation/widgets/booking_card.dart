@@ -46,196 +46,22 @@ class BookingCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
+              // Profile + info row
               Row(
                 children: [
-                  // Profile picture with status indicator
-                  Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: _statusColor(booking.status),
-                            width: 3,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _statusColor(
-                                booking.status,
-                              ).withOpacity(0.4),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: CircleAvatar(
-                          radius: 36,
-                          backgroundImage: booking.profilePic.isNotEmpty
-                              ? NetworkImage(booking.profilePic)
-                              : null,
-                          backgroundColor: _statusColor(
-                            booking.status,
-                          ).withOpacity(0.2),
-                          child: booking.profilePic.isEmpty
-                              ? Icon(
-                                  Icons.person,
-                                  size: 36,
-                                  color: _statusColor(booking.status),
-                                )
-                              : null,
-                        ),
-                      ),
-                      if (booking.status == 'pending')
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.orange,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: const Icon(
-                              Icons.access_time,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                  _buildProfilePic(),
                   const SizedBox(width: 16),
-
-                  // Member info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          booking.memberName,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2C3E50),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.phone_rounded,
-                              size: 16,
-                              color: Colors.grey[600],
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              booking.memberPhone,
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Status badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _statusColor(booking.status),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _statusColor(booking.status).withOpacity(0.4),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      _statusText(booking.status),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                  _buildMemberInfo(),
+                  _buildStatusBadge(),
                 ],
               ),
 
               const SizedBox(height: 16),
 
-              // Date and time info
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[200]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today_rounded,
-                      size: 20,
-                      color: _statusColor(booking.status),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Appointment Date',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            DateFormat(
-                              'EEE, MMM dd, yyyy',
-                            ).format(booking.bookingDate.toLocal()),
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF2C3E50),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Icons.access_time_rounded,
-                      size: 20,
-                      color: _statusColor(booking.status),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      DateFormat(
-                        'hh:mm a',
-                      ).format(booking.bookingDate.toLocal()),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2C3E50),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // Date/time info
+              _buildDateTimeInfo(),
 
-              // Action buttons for pending bookings
+              // ✅ Only show action buttons if pending
               if (booking.status == 'pending') ...[
                 const SizedBox(height: 16),
                 Row(
@@ -244,13 +70,7 @@ class BookingCard extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: onDecline,
                         icon: const Icon(Icons.close_rounded, size: 20),
-                        label: const Text(
-                          'Decline',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        label: const Text('Decline'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.red[600],
@@ -268,13 +88,7 @@ class BookingCard extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: onAccept,
                         icon: const Icon(Icons.check_rounded, size: 20),
-                        label: const Text(
-                          'Accept',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        label: const Text('Accept'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green[600],
                           foregroundColor: Colors.white,
@@ -293,6 +107,147 @@ class BookingCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildProfilePic() {
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: _statusColor(booking.status), width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: _statusColor(booking.status).withOpacity(0.4),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: CircleAvatar(
+        radius: 36,
+        backgroundImage: booking.profilePic.isNotEmpty
+            ? NetworkImage(booking.profilePic)
+            : null,
+        backgroundColor: _statusColor(booking.status).withOpacity(0.2),
+        child: booking.profilePic.isEmpty
+            ? Icon(Icons.person, size: 36, color: _statusColor(booking.status))
+            : null,
+      ),
+    );
+  }
+
+  Widget _buildMemberInfo() {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            booking.memberName,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2C3E50),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(Icons.phone_rounded, size: 16, color: Colors.grey[600]),
+              const SizedBox(width: 6),
+              Text(
+                booking.memberPhone,
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: _statusColor(booking.status),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: _statusColor(booking.status).withOpacity(0.4),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        _statusText(booking.status),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateTimeInfo() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.calendar_today_rounded,
+            size: 20,
+            color: _statusColor(booking.status),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Appointment Date',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  DateFormat(
+                    'EEE, MMM dd, yyyy',
+                  ).format(booking.bookingDate.toLocal()),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2C3E50),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.access_time_rounded,
+            size: 20,
+            color: _statusColor(booking.status),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            DateFormat('hh:mm a').format(booking.bookingDate.toLocal()),
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2C3E50),
+            ),
+          ),
+        ],
       ),
     );
   }
