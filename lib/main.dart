@@ -26,6 +26,7 @@ Future<void> main() async {
         hiveServiceProvider.overrideWithValue(hiveService),
         storageServiceProvider.overrideWithValue(storageService),
         sharedPreferencesProvider.overrideWithValue(prefs), // ✅ added override
+        // Chat providers don’t need overrides unless you want to swap implementations
       ],
       child: const NepalinkApp(),
     ),
