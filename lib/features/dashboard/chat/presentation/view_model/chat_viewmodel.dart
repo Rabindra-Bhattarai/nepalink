@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/legacy.dart';
 
+import 'package:nepalink/features/dashboard/chat/domain/entities/chat_entity.dart';
 import 'package:nepalink/features/dashboard/chat/domain/usecases/get_messages_usecase.dart';
 import 'package:nepalink/features/dashboard/chat/domain/usecases/send_message_usecase.dart';
 import 'package:nepalink/features/dashboard/chat/domain/usecases/mark_read_usecase.dart';
@@ -50,13 +51,37 @@ class ChatViewModel extends StateNotifier<ChatState> {
     );
   }
 
-  /// Send a new message
+  /// Send a message with optimistic update:
+  /// 1. Immediately append the message to the list (shows on screen instantly)
+  /// 2. Call the API in the background
+  /// 3. Replace the optimistic message with the real one from the server
   Future<void> sendMessage({
     required String contractId,
     required String receiverId,
     required String message,
     List<String>? attachments,
   }) async {
+    // ── Step 1: Optimistic update ──
+    // Create a temporary message with a local ID so it appears instantly
+    final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final optimisticMessage = ChatMessageEntity(
+      id: tempId,
+      contractId: contractId,
+      senderId: 'me',        // placeholder — only used for display
+      receiverId: receiverId, // ✅ correct receiverId so isMe check works
+      message: message,
+      isRead: false,
+      attachments: attachments,
+      createdAt: DateTime.now(),
+    );
+
+    // Add to state immediately — user sees it on the right side instantly
+    state = state.copyWith(
+      status: ChatStatus.success,
+      messages: [...state.messages, optimisticMessage],
+    );
+
+    // ── Step 2: Send to API ──
     final result = await _sendMessageUsecase(
       SendMessageParams(
         contractId: contractId,
@@ -68,13 +93,18 @@ class ChatViewModel extends StateNotifier<ChatState> {
 
     result.fold(
       (failure) {
+        // ── Step 3a: On failure — remove the optimistic message and show error ──
         state = state.copyWith(
           status: ChatStatus.failure,
           errorMessage: failure.message,
+          messages: state.messages.where((m) => m.id != tempId).toList(),
         );
       },
       (sentMessage) {
-        final updatedMessages = [...state.messages, sentMessage];
+        // ── Step 3b: On success — replace temp message with real server message ──
+        final updatedMessages = state.messages
+            .map((m) => m.id == tempId ? sentMessage : m)
+            .toList();
         state = state.copyWith(
           status: ChatStatus.success,
           messages: updatedMessages,
