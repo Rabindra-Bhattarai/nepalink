@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nepalink/features/dashboard/chat/presentation/screens/chat_tab.dart';
-import 'package:nepalink/features/button_screen/home_screen.dart';
+import 'package:nepalink/features/dashboard/home/presentation/pages/home_page.dart';
 import 'package:nepalink/features/dashboard/tasks/presentation/pages/task_page.dart';
 import 'package:nepalink/features/dashboard/booking/presentation/pages/booking_page.dart';
 import 'package:nepalink/features/dashboard/presentation/pages/profile_screen.dart';
@@ -17,7 +17,7 @@ class _ButtonNavigationScreenState extends State<ButtonNavigationScreen> {
 
   // Screens for each tab
   final List<Widget> lstBottomScreen = [
-    const HomeScreen(),
+    const HomePage(),
     const BookingPage(),
     const TaskPage(),
 

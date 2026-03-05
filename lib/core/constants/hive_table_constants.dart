@@ -23,4 +23,8 @@ class HiveTableConstant {
   // Chat
   static const int chatTypeId = 4;
   static const String chatTable = "chat_table";
+
+  // Home Activity (assigned activities for nurse)
+  static const int activityTypeId = 5;
+  static const String activityTable = "activity_table";
 }

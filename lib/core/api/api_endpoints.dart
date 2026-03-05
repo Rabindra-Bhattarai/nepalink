@@ -7,7 +7,7 @@ class ApiEndpoints {
   // Flip this flag depending on whether you're testing on a physical device or emulator
   static const bool isPhysicalDevice = true;
   static const String compIpAddress =
-      "10.238.15.214"; // your PC IP for physical device
+      "10.221.76.214"; // your PC IP for physical device
 
   static String get baseUrl {
     if (kIsWeb) {

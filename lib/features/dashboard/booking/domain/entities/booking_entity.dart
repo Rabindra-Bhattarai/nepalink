@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 
 class BookingEntity extends Equatable {
-  final String id; // bookingId
+  final String id;          // bookingId
   final String memberId;
   final String nurseId;
-  final String contractId; // ✅ always a string ObjectId
+  final String contractId;  // ✅ always a string ObjectId
   final String memberName;
   final String memberPhone;
   final String profilePic;
@@ -33,13 +33,11 @@ class BookingEntity extends Equatable {
       memberId: member['_id']?.toString() ?? '',
       nurseId: nurse['_id']?.toString() ?? '',
       // ✅ Extract _id if contractId is an object, else fallback to string
-      contractId:
-          contract?['_id']?.toString() ?? json['contractId']?.toString() ?? '',
+      contractId: contract?['_id']?.toString() ?? json['contractId']?.toString() ?? '',
       memberName: member['name']?.toString() ?? '',
       memberPhone: member['phone']?.toString() ?? '',
       profilePic: member['profilePic']?.toString() ?? '',
-      bookingDate:
-          DateTime.tryParse(json['date']?.toString() ?? '') ?? DateTime.now(),
+      bookingDate: DateTime.tryParse(json['date']?.toString() ?? '') ?? DateTime.now(),
       status: json['status']?.toString() ?? 'pending',
     );
   }
@@ -71,14 +69,14 @@ class BookingEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    memberId,
-    nurseId,
-    contractId,
-    memberName,
-    memberPhone,
-    profilePic,
-    bookingDate,
-    status,
-  ];
+        id,
+        memberId,
+        nurseId,
+        contractId,
+        memberName,
+        memberPhone,
+        profilePic,
+        bookingDate,
+        status,
+      ];
 }

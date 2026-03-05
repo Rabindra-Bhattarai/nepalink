@@ -5,6 +5,7 @@ import 'package:nepalink/features/auth/data/models/user_hive_model.dart';
 import 'package:nepalink/features/dashboard/booking/data/models/booking_hive_model.dart';
 import 'package:nepalink/features/dashboard/tasks/data/models/task_hive_model.dart';
 import 'package:nepalink/features/dashboard/chat/data/models/chat_hive_model.dart';
+import 'package:nepalink/features/dashboard/home/data/models/activity_hive_model.dart'; // ← new
 
 class HiveService {
   /// Initialize Hive with a custom path and open all required boxes
@@ -13,10 +14,7 @@ class HiveService {
     final path = '${directory.path}/${HiveTableConstant.dbName}';
     Hive.init(path);
 
-    // Register all adapters (User, Booking, Task, Chat, etc.)
     _registerAdapter();
-
-    // Open the Hive boxes so they’re ready for use
     await _openBoxes();
   }
 
@@ -34,6 +32,10 @@ class HiveService {
     if (!Hive.isAdapterRegistered(HiveTableConstant.chatTypeId)) {
       Hive.registerAdapter(ChatHiveModelAdapter());
     }
+    // ← new
+    if (!Hive.isAdapterRegistered(HiveTableConstant.activityTypeId)) {
+      Hive.registerAdapter(ActivityHiveModelAdapter());
+    }
   }
 
   /// Open all the Hive boxes we need
@@ -42,9 +44,12 @@ class HiveService {
     await Hive.openBox<BookingHiveModel>(HiveTableConstant.bookingTable);
     await Hive.openBox<TaskHiveModel>(HiveTableConstant.taskTable);
     await Hive.openBox<ChatHiveModel>(HiveTableConstant.chatTable);
+    await Hive.openBox<ActivityHiveModel>(
+      HiveTableConstant.activityTable,
+    ); // ← new
   }
 
-  /// Close Hive completely (useful for app shutdown or cleanup)
+  /// Close Hive completely
   Future<void> close() async {
     await Hive.close();
   }
@@ -139,7 +144,6 @@ class HiveService {
     final messages = box.values.where(
       (msg) => msg.contractId == contractId && !msg.isRead,
     );
-
     for (var msg in messages) {
       final updated = ChatHiveModel(
         id: msg.id,
@@ -153,5 +157,27 @@ class HiveService {
       );
       await box.put(updated.id, updated);
     }
+  }
+
+  // ======================= Activity Queries =========================
+
+  Box<ActivityHiveModel> getActivityBox() {
+    return Hive.box<ActivityHiveModel>(HiveTableConstant.activityTable);
+  }
+
+  Future<void> saveActivities(List<ActivityHiveModel> activities) async {
+    final box = getActivityBox();
+    await box.clear();
+    for (final activity in activities) {
+      await box.put(activity.id, activity);
+    }
+  }
+
+  List<ActivityHiveModel> getActivities() {
+    return getActivityBox().values.toList();
+  }
+
+  Future<void> clearActivities() async {
+    await getActivityBox().clear();
   }
 }
