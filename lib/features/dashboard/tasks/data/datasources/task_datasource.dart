@@ -7,7 +7,7 @@ abstract interface class ITaskLocalDataSource {
   Future<List<TaskHiveModel>> getTasksForNurse(String nurseId);
   Future<List<TaskHiveModel>> getTasksForMember(String memberId);
   Future<TaskHiveModel?> getTaskById(String id);
-  Future<bool> deleteTask(String id);
+  Future<bool> deleteTask(String id); // already existed
 }
 
 /// Remote data source contract
@@ -20,4 +20,6 @@ abstract interface class ITaskRemoteDataSource {
     String status,
     Map<String, dynamic>? updates,
   );
+
+  Future<bool> deleteTask(String taskId);
 }
