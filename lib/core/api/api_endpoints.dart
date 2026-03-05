@@ -56,4 +56,14 @@ class ApiEndpoints {
 
   // Update activity status
   static String activityUpdateStatus(String id) => '/activities/$id/status';
+
+  // ====================== Chat Endpoints ======================
+  /// Fetch all messages for a contract
+  static String chatMessages(String contractId) => '/chat/$contractId';
+
+  /// Send a new message in a contract
+  static String chatSend(String contractId) => '/chat/$contractId/message';
+
+  /// Mark messages as read for a contract
+  static String chatMarkRead(String contractId) => '/chat/$contractId/read';
 }

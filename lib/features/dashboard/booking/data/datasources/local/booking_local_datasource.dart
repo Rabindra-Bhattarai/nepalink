@@ -14,10 +14,16 @@ class BookingLocalDatasource implements IBookingLocalDataSource {
   final HiveService _hiveService;
 
   BookingLocalDatasource({required HiveService hiveService})
-    : _hiveService = hiveService;
+      : _hiveService = hiveService;
 
   @override
   Future<List<BookingEntity>> getBookingsForNurse() async {
+    final box = _hiveService.getBookingBox();
+    return box.values.map((hiveModel) => hiveModel.toEntity()).toList();
+  }
+
+  // ✅ Added: fetch bookings for member
+  Future<List<BookingEntity>> getBookingsForMember() async {
     final box = _hiveService.getBookingBox();
     return box.values.map((hiveModel) => hiveModel.toEntity()).toList();
   }
@@ -39,5 +45,11 @@ class BookingLocalDatasource implements IBookingLocalDataSource {
       final updated = booking.copyWith(status: status);
       await box.put(bookingId, updated);
     }
+  }
+
+  // ✅ Added: save a single booking (used in accept/decline/cancel flows)
+  Future<void> saveBooking(BookingEntity booking) async {
+    final box = _hiveService.getBookingBox();
+    await box.put(booking.id, BookingHiveModel.fromEntity(booking));
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nepalink/features/button_screen/chat_page.dart';
+import 'package:nepalink/features/dashboard/chat/presentation/screens/chat_tab.dart';
 import 'package:nepalink/features/button_screen/home_screen.dart';
 import 'package:nepalink/features/dashboard/tasks/presentation/pages/task_page.dart';
 import 'package:nepalink/features/dashboard/booking/presentation/pages/booking_page.dart';
@@ -20,7 +20,8 @@ class _ButtonNavigationScreenState extends State<ButtonNavigationScreen> {
     const HomeScreen(),
     const BookingPage(),
     const TaskPage(),
-    const ChatPage(),
+
+    const ChatTab(),
     const ProfileScreen(),
   ];
 

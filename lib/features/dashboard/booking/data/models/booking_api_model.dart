@@ -2,6 +2,9 @@ import 'package:nepalink/features/dashboard/booking/domain/entities/booking_enti
 
 class BookingApiModel {
   final String id;
+  final String memberId;
+  final String nurseId;
+  final String contractId;   // ✅ new
   final String memberName;
   final String memberPhone;
   final String profilePic;
@@ -10,6 +13,9 @@ class BookingApiModel {
 
   BookingApiModel({
     required this.id,
+    required this.memberId,
+    required this.nurseId,
+    required this.contractId,
     required this.memberName,
     required this.memberPhone,
     required this.profilePic,
@@ -17,10 +23,12 @@ class BookingApiModel {
     required this.status,
   });
 
-  /// Convert API JSON to model
   factory BookingApiModel.fromJson(Map<String, dynamic> json) {
     return BookingApiModel(
       id: json['_id'] as String,
+      memberId: json['memberId']?['_id'] ?? '',
+      nurseId: json['nurseId']?['_id'] ?? '',
+      contractId: json['contractId'] ?? '', // ✅ parse contractId if backend includes it
       memberName: json['memberId']?['name'] ?? '',
       memberPhone: json['memberId']?['phone'] ?? '',
       profilePic: json['memberId']?['imageUrl'] ?? '',
@@ -29,10 +37,12 @@ class BookingApiModel {
     );
   }
 
-  /// Convert API model to domain entity
   BookingEntity toEntity() {
     return BookingEntity(
       id: id,
+      memberId: memberId,
+      nurseId: nurseId,
+      contractId: contractId,
       memberName: memberName,
       memberPhone: memberPhone,
       profilePic: profilePic,
@@ -41,10 +51,12 @@ class BookingApiModel {
     );
   }
 
-  /// Create API model from domain entity (for sending data back if needed)
   factory BookingApiModel.fromEntity(BookingEntity entity) {
     return BookingApiModel(
       id: entity.id,
+      memberId: entity.memberId,
+      nurseId: entity.nurseId,
+      contractId: entity.contractId,
       memberName: entity.memberName,
       memberPhone: entity.memberPhone,
       profilePic: entity.profilePic,
