@@ -68,4 +68,9 @@ class ApiEndpoints {
 
   /// Mark messages as read for a contract
   static String chatMarkRead(String contractId) => '/chat/$contractId/read';
+
+  // ====================== Notification Endpoints ======================
+  static const String notifications = '/notifications';
+  static const String notificationsMarkAllRead = '/notifications/read-all';
+  static String notificationMarkRead(String id) => '/notifications/$id/read';
 }
