@@ -7,16 +7,16 @@ import 'core/providers/hive_provider.dart';
 import 'core/providers/shared_pres_provider.dart';
 import 'core/services/hive/hive_service.dart';
 import 'core/services/storage/storage_service.dart';
-import 'core/services/storage/user_session_service.dart'; // ✅ import this
+import 'core/services/storage/user_session_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ Initialize HiveService
+  //  Initialize HiveService
   final hiveService = HiveService();
   await hiveService.init();
 
-  // ✅ Initialize SharedPreferences
+  //  Initialize SharedPreferences
   final prefs = await SharedPreferences.getInstance();
   final storageService = StorageService(prefs: prefs);
 
