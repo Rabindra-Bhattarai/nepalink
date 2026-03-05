@@ -1,31 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nepalink/features/dashboard/chat/presentation/screens/chat_tab.dart';
 import 'package:nepalink/features/dashboard/home/presentation/pages/home_page.dart';
 import 'package:nepalink/features/dashboard/tasks/presentation/pages/task_page.dart';
 import 'package:nepalink/features/dashboard/booking/presentation/pages/booking_page.dart';
 import 'package:nepalink/features/dashboard/presentation/pages/profile_screen.dart';
+import 'package:nepalink/features/dashboard/notification/presentation/widgets/notification_bell.dart';
+import 'package:nepalink/features/dashboard/notification/presentation/view_model/notification_view_model.dart';
 
-class ButtonNavigationScreen extends StatefulWidget {
+// ✅ Changed from StatefulWidget to ConsumerStatefulWidget
+class ButtonNavigationScreen extends ConsumerStatefulWidget {
   const ButtonNavigationScreen({super.key});
 
   @override
-  State<ButtonNavigationScreen> createState() => _ButtonNavigationScreenState();
+  ConsumerState<ButtonNavigationScreen> createState() =>
+      _ButtonNavigationScreenState();
 }
 
-class _ButtonNavigationScreenState extends State<ButtonNavigationScreen> {
+// ✅ Changed from State to ConsumerState
+class _ButtonNavigationScreenState
+    extends ConsumerState<ButtonNavigationScreen> {
   int _selectedIndex = 0;
 
-  // Screens for each tab
   final List<Widget> lstBottomScreen = [
     const HomePage(),
     const BookingPage(),
     const TaskPage(),
-
     const ChatTab(),
     const ProfileScreen(),
   ];
 
-  // Navigation items data
   final List<Map<String, dynamic>> _navItems = [
     {'icon': Icons.home_rounded, 'label': 'Home', 'color': Colors.blue},
     {
@@ -37,6 +41,15 @@ class _ButtonNavigationScreenState extends State<ButtonNavigationScreen> {
     {'icon': Icons.chat_bubble_rounded, 'label': 'Chat', 'color': Colors.green},
     {'icon': Icons.person_rounded, 'label': 'Profile', 'color': Colors.teal},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // ✅ Load notifications after first frame so token is ready
+    Future.microtask(() {
+      ref.read(notificationViewModelProvider.notifier).loadNotifications();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,39 +92,7 @@ class _ButtonNavigationScreenState extends State<ButtonNavigationScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: Stack(
-              children: [
-                const Icon(
-                  Icons.notifications_rounded,
-                  color: Color(0xFF2C3E50),
-                  size: 28,
-                ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            onPressed: () {
-              // Handle notification tap
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
+        actions: [const NotificationBell(), const SizedBox(width: 8)],
       ),
       body: lstBottomScreen[_selectedIndex],
       extendBody: true,
@@ -158,11 +139,7 @@ class _ButtonNavigationScreenState extends State<ButtonNavigationScreen> {
     final isSelected = _selectedIndex == index;
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedIndex = index;
-        });
-      },
+      onTap: () => setState(() => _selectedIndex = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
