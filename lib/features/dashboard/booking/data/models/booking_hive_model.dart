@@ -10,22 +10,34 @@ class BookingHiveModel extends HiveObject {
   final String id;
 
   @HiveField(1)
-  final String memberName;
+  final String memberId;
 
   @HiveField(2)
-  final String memberPhone;
+  final String nurseId;
 
   @HiveField(3)
-  final String profilePic;
+  final String contractId; // ✅ new
 
   @HiveField(4)
-  final DateTime bookingDate;
+  final String memberName;
 
   @HiveField(5)
+  final String memberPhone;
+
+  @HiveField(6)
+  final String profilePic;
+
+  @HiveField(7)
+  final DateTime bookingDate;
+
+  @HiveField(8)
   final String status;
 
   BookingHiveModel({
     required this.id,
+    required this.memberId,
+    required this.nurseId,
+    required this.contractId,
     required this.memberName,
     required this.memberPhone,
     required this.profilePic,
@@ -33,10 +45,12 @@ class BookingHiveModel extends HiveObject {
     required this.status,
   });
 
-  /// Convert Hive model to domain entity
   BookingEntity toEntity() {
     return BookingEntity(
       id: id,
+      memberId: memberId,
+      nurseId: nurseId,
+      contractId: contractId,
       memberName: memberName,
       memberPhone: memberPhone,
       profilePic: profilePic,
@@ -45,10 +59,12 @@ class BookingHiveModel extends HiveObject {
     );
   }
 
-  /// Create Hive model from domain entity
   factory BookingHiveModel.fromEntity(BookingEntity entity) {
     return BookingHiveModel(
       id: entity.id,
+      memberId: entity.memberId,
+      nurseId: entity.nurseId,
+      contractId: entity.contractId,
       memberName: entity.memberName,
       memberPhone: entity.memberPhone,
       profilePic: entity.profilePic,
@@ -57,10 +73,12 @@ class BookingHiveModel extends HiveObject {
     );
   }
 
-  /// Update booking status locally
   BookingHiveModel copyWith({String? status}) {
     return BookingHiveModel(
       id: id,
+      memberId: memberId,
+      nurseId: nurseId,
+      contractId: contractId,
       memberName: memberName,
       memberPhone: memberPhone,
       profilePic: profilePic,
