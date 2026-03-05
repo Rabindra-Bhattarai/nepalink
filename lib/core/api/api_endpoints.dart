@@ -57,6 +57,8 @@ class ApiEndpoints {
   // Update activity status
   static String activityUpdateStatus(String id) => '/activities/$id/status';
 
+  static String activityDelete(String id) => '/activities/$id';
+
   // ====================== Chat Endpoints ======================
   /// Fetch all messages for a contract
   static String chatMessages(String contractId) => '/chat/$contractId';
@@ -66,4 +68,9 @@ class ApiEndpoints {
 
   /// Mark messages as read for a contract
   static String chatMarkRead(String contractId) => '/chat/$contractId/read';
+
+  // ====================== Notification Endpoints ======================
+  static const String notifications = '/notifications';
+  static const String notificationsMarkAllRead = '/notifications/read-all';
+  static String notificationMarkRead(String id) => '/notifications/$id/read';
 }

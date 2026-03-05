@@ -26,10 +26,8 @@ class ApiClient {
       ),
     );
 
-    // ✅ Attach AuthInterceptor
     _dio.interceptors.add(AuthInterceptor());
 
-    // Auto retry on network failures
     _dio.interceptors.add(
       RetryInterceptor(
         dio: _dio,
@@ -100,6 +98,21 @@ class ApiClient {
     );
   }
 
+  // ✅ Added — used by notification mark-read endpoints
+  Future<Response> patch(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    return _dio.patch(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
+  }
+
   Future<Response> delete(
     String path, {
     dynamic data,
@@ -138,7 +151,6 @@ class AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    // Public endpoints should not require token
     final publicEndpoints = [ApiEndpoints.userLogin, ApiEndpoints.userSignup];
     final isPublic = publicEndpoints.any(
       (endpoint) => options.path.startsWith(endpoint),
@@ -160,7 +172,6 @@ class AuthInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.response?.statusCode == 401) {
-      // ✅ Clear token on unauthorized
       _storage.delete(key: _tokenKey);
     }
     handler.next(err);

@@ -19,29 +19,23 @@ class TaskRemoteDataSource implements ITaskRemoteDataSource {
       ApiEndpoints.activityCreate,
       data: task.toJson(),
     );
-    print("✅ createTask response: ${response.data}");
     return TaskApiModel.fromJson(response.data['data']);
   }
 
-  /// Nurse fetches their assigned activities
   @override
   Future<List<TaskApiModel>> getTasksForNurse(String nurseId) async {
     final response = await _apiClient.get(ApiEndpoints.activitiesAssigned);
-    print("✅ getTasksForNurse response: ${response.data}");
     final List<dynamic> data = response.data['data'];
     return data.map((json) => TaskApiModel.fromJson(json)).toList();
   }
 
-  /// Member fetches their own activities
   @override
   Future<List<TaskApiModel>> getTasksForMember(String memberId) async {
     final response = await _apiClient.get(ApiEndpoints.activitiesMy);
-    print("✅ getTasksForMember response: ${response.data}");
     final List<dynamic> data = response.data['data'];
     return data.map((json) => TaskApiModel.fromJson(json)).toList();
   }
 
-  /// Nurse updates activity status
   @override
   Future<TaskApiModel> updateTaskStatus(
     String taskId,
@@ -52,7 +46,13 @@ class TaskRemoteDataSource implements ITaskRemoteDataSource {
       ApiEndpoints.activityUpdateStatus(taskId),
       data: {"status": status, ...?updates},
     );
-    print("✅ updateTaskStatus response: ${response.data}");
     return TaskApiModel.fromJson(response.data['data']);
+  }
+
+
+  @override
+  Future<bool> deleteTask(String taskId) async {
+    await _apiClient.delete(ApiEndpoints.activityDelete(taskId));
+    return true;
   }
 }
