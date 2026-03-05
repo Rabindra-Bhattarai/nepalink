@@ -18,29 +18,38 @@ class BookingHiveModelAdapter extends TypeAdapter<BookingHiveModel> {
     };
     return BookingHiveModel(
       id: fields[0] as String,
-      memberName: fields[1] as String,
-      memberPhone: fields[2] as String,
-      profilePic: fields[3] as String,
-      bookingDate: fields[4] as DateTime,
-      status: fields[5] as String,
+      memberId: fields[1] as String,
+      nurseId: fields[2] as String,
+      contractId: fields[3] as String,
+      memberName: fields[4] as String,
+      memberPhone: fields[5] as String,
+      profilePic: fields[6] as String,
+      bookingDate: fields[7] as DateTime,
+      status: fields[8] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, BookingHiveModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.memberName)
+      ..write(obj.memberId)
       ..writeByte(2)
-      ..write(obj.memberPhone)
+      ..write(obj.nurseId)
       ..writeByte(3)
-      ..write(obj.profilePic)
+      ..write(obj.contractId)
       ..writeByte(4)
-      ..write(obj.bookingDate)
+      ..write(obj.memberName)
       ..writeByte(5)
+      ..write(obj.memberPhone)
+      ..writeByte(6)
+      ..write(obj.profilePic)
+      ..writeByte(7)
+      ..write(obj.bookingDate)
+      ..writeByte(8)
       ..write(obj.status);
   }
 
