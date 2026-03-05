@@ -25,12 +25,18 @@ class BookingRemoteDatasource implements IBookingRemoteDataSource {
   }
 
   @override
-  Future<BookingEntity> acceptBooking(String bookingId) async {
+  Future<Map<String, dynamic>> acceptBooking(String bookingId) async {
     final response = await _apiClient.put(
       ApiEndpoints.bookingAccept(bookingId),
     );
-    final bookingJson = response.data['data']['booking']; // ✅ drill down
-    return BookingEntity.fromJson(bookingJson);
+
+    // ✅ Backend returns { booking, contract }
+    final bookingJson = response.data['data']['booking'];
+    final contractJson = response.data['data']['contract'];
+
+    final booking = BookingEntity.fromJson(bookingJson);
+
+    return {'booking': booking, 'contract': contractJson};
   }
 
   @override
@@ -38,7 +44,7 @@ class BookingRemoteDatasource implements IBookingRemoteDataSource {
     final response = await _apiClient.put(
       ApiEndpoints.bookingDecline(bookingId),
     );
-    final bookingJson = response.data['data']['booking']; // ✅ drill down
+    final bookingJson = response.data['data']['booking'];
     return BookingEntity.fromJson(bookingJson);
   }
 }
