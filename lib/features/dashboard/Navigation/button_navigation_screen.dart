@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nepalink/features/dashboard/ai/presentation/pages/ai_page.dart';
 import 'package:nepalink/features/dashboard/chat/presentation/screens/chat_tab.dart';
 import 'package:nepalink/features/dashboard/home/presentation/pages/home_page.dart';
 import 'package:nepalink/features/dashboard/tasks/presentation/pages/task_page.dart';
@@ -8,7 +9,6 @@ import 'package:nepalink/features/dashboard/profile/presentation/pages/profile_s
 import 'package:nepalink/features/dashboard/notification/presentation/widgets/notification_bell.dart';
 import 'package:nepalink/features/dashboard/notification/presentation/view_model/notification_view_model.dart';
 
-//  Changed from StatefulWidget to ConsumerStatefulWidget
 class ButtonNavigationScreen extends ConsumerStatefulWidget {
   const ButtonNavigationScreen({super.key});
 
@@ -17,7 +17,6 @@ class ButtonNavigationScreen extends ConsumerStatefulWidget {
       _ButtonNavigationScreenState();
 }
 
-//  Changed from State to ConsumerState
 class _ButtonNavigationScreenState
     extends ConsumerState<ButtonNavigationScreen> {
   int _selectedIndex = 0;
@@ -26,6 +25,7 @@ class _ButtonNavigationScreenState
     const HomePage(),
     const BookingPage(),
     const TaskPage(),
+    const AiPage(),
     const ChatTab(),
     const ProfileScreen(),
   ];
@@ -38,6 +38,7 @@ class _ButtonNavigationScreenState
       'color': Colors.purple,
     },
     {'icon': Icons.assignment_rounded, 'label': 'Task', 'color': Colors.orange},
+    {'icon': Icons.auto_awesome, 'label': 'AI', 'color': Colors.deepPurple},
     {'icon': Icons.chat_bubble_rounded, 'label': 'Chat', 'color': Colors.green},
     {'icon': Icons.person_rounded, 'label': 'Profile', 'color': Colors.teal},
   ];
@@ -45,7 +46,6 @@ class _ButtonNavigationScreenState
   @override
   void initState() {
     super.initState();
-    //  Load notifications after first frame so token is ready
     Future.microtask(() {
       ref.read(notificationViewModelProvider.notifier).loadNotifications();
     });
@@ -111,7 +111,7 @@ class _ButtonNavigationScreenState
           child: BottomAppBar(
             elevation: 0,
             color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: List.generate(
@@ -144,7 +144,7 @@ class _ButtonNavigationScreenState
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 16 : 12,
+          horizontal: isSelected ? 12 : 8,
           vertical: 8,
         ),
         decoration: BoxDecoration(
@@ -165,8 +165,8 @@ class _ButtonNavigationScreenState
               children: [
                 if (isSelected)
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
                       color: color.withOpacity(0.15),
                       shape: BoxShape.circle,
@@ -175,18 +175,18 @@ class _ButtonNavigationScreenState
                 Icon(
                   icon,
                   color: isSelected ? color : Colors.grey[400],
-                  size: isSelected ? 28 : 24,
+                  size: isSelected ? 26 : 22,
                 ),
               ],
             ),
             if (isSelected) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               AnimatedDefaultTextStyle(
                 duration: const Duration(milliseconds: 300),
                 style: TextStyle(
                   color: color,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: 13,
                 ),
                 child: Text(label),
               ),

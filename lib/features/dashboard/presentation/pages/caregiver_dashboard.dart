@@ -58,7 +58,7 @@ class _CaregiverDashboardState extends State<CaregiverDashboard> {
             icon: const Icon(Icons.settings, color: Colors.white),
             onPressed: () {},
           ),
-          // ✅ Replaced plain IconButton with NotificationBell
+          // Replaced plain IconButton with NotificationBell
           // Shows red badge with unread count automatically
           const NotificationBell(),
         ],
