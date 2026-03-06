@@ -1,5 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:proximity_sensor/proximity_sensor.dart';
+import 'package:shake/shake.dart';
+import 'package:nepalink/core/providers/theme_provider.dart';
 import 'package:nepalink/features/dashboard/ai/presentation/pages/ai_page.dart';
 import 'package:nepalink/features/dashboard/chat/presentation/screens/chat_tab.dart';
 import 'package:nepalink/features/dashboard/home/presentation/pages/home_page.dart';
@@ -8,6 +13,7 @@ import 'package:nepalink/features/dashboard/booking/presentation/pages/booking_p
 import 'package:nepalink/features/dashboard/profile/presentation/pages/profile_screen.dart';
 import 'package:nepalink/features/dashboard/notification/presentation/widgets/notification_bell.dart';
 import 'package:nepalink/features/dashboard/notification/presentation/view_model/notification_view_model.dart';
+import 'package:nepalink/features/auth/presentation/view_model/login_viewmodel.dart';
 
 class ButtonNavigationScreen extends ConsumerStatefulWidget {
   const ButtonNavigationScreen({super.key});
@@ -20,6 +26,13 @@ class ButtonNavigationScreen extends ConsumerStatefulWidget {
 class _ButtonNavigationScreenState
     extends ConsumerState<ButtonNavigationScreen> {
   int _selectedIndex = 0;
+
+  // ── Proximity sensor (logout) ──
+  StreamSubscription<dynamic>? _proximitySub;
+  bool _isLoggingOut = false;
+
+  // ── Shake detector (theme toggle) ──
+  ShakeDetector? _shakeDetector;
 
   final List<Widget> lstBottomScreen = [
     const HomePage(),
@@ -49,6 +62,160 @@ class _ButtonNavigationScreenState
     Future.microtask(() {
       ref.read(notificationViewModelProvider.notifier).loadNotifications();
     });
+    _startProximitySensor();
+    _startShakeDetector();
+  }
+
+  // ── Proximity sensor — logout ──────────────────────────────────────────────
+  void _startProximitySensor() {
+    try {
+      _proximitySub = ProximitySensor.events.listen((int event) {
+        if (event > 0 && !_isLoggingOut) {
+          _triggerProximityLogout();
+        }
+      });
+    } catch (e) {
+      debugPrint('Proximity sensor not available: $e');
+    }
+  }
+
+  Future<void> _triggerProximityLogout() async {
+    _isLoggingOut = true;
+    await _playBeeps();
+    if (!mounted) return;
+    _showLogoutOverlay();
+    await Future.delayed(const Duration(milliseconds: 1200));
+    if (!mounted) return;
+    await ref.read(loginViewModelProvider.notifier).logout();
+    if (!mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+  }
+
+  Future<void> _playBeeps() async {
+    for (int i = 0; i < 3; i++) {
+      await SystemSound.play(SystemSoundType.click);
+      await HapticFeedback.mediumImpact();
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
+  }
+
+  void _showLogoutOverlay() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (_) => Center(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 40),
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 20),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.sensor_door_rounded,
+                  color: Colors.red[400],
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Logging Out',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2C3E50),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Proximity sensor detected.\nSigning you out safely...',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const LinearProgressIndicator(
+                backgroundColor: Color(0xFFEEEEEE),
+                color: Colors.red,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Shake detector — toggle theme ─────────────────────────────────────────
+  void _startShakeDetector() {
+    _shakeDetector = ShakeDetector.autoStart(
+      onPhoneShake: () async {
+        // Toggle theme
+        await ref.read(themeModeProvider.notifier).toggle();
+
+        // Haptic + show toast
+        await HapticFeedback.heavyImpact();
+        if (!mounted) return;
+
+        final isDark = ref.read(themeModeProvider) == ThemeMode.dark;
+        _showThemeToast(isDark);
+      },
+      minimumShakeCount: 2, // shakes needed to trigger
+      shakeSlopTimeMS: 500, // ms between shake counts
+      shakeCountResetTime: 3000, // reset count after 3s
+      shakeThresholdGravity: 2.7, // sensitivity (lower = easier to trigger)
+    );
+  }
+
+  void _showThemeToast(bool isDark) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              isDark ? 'Dark mode on 🌙' : 'Light mode on ☀️',
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+          ],
+        ),
+        backgroundColor: isDark
+            ? const Color(0xFF2C3E50)
+            : const Color(0xFF2A9D7A),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _proximitySub?.cancel();
+    _shakeDetector?.stopListening();
+    super.dispose();
   }
 
   @override

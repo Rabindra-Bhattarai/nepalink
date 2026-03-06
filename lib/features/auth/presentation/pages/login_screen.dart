@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nepalink/core/services/biometric/biometric_service.dart';
+import 'package:nepalink/core/services/storage/user_session_service.dart';
 import 'package:nepalink/features/auth/presentation/view_model/login_viewmodel.dart';
 import 'package:nepalink/features/auth/presentation/state/login_state.dart';
 
@@ -15,13 +17,72 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool obscurePassword = true;
+  bool _isBiometricAvailable = false;
+  bool _isBiometricLoading = false;
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometricAvailability();
+  }
+
+  /// Show fingerprint button only if device supports it AND user has enabled it in profile
+  Future<void> _checkBiometricAvailability() async {
+    final biometricService = ref.read(biometricServiceProvider);
+    final isAvailable = await biometricService.isAvailable();
+    final isEnabled = await biometricService.isBiometricEnabled();
+    if (mounted) {
+      setState(() => _isBiometricAvailable = isAvailable && isEnabled);
+    }
+  }
 
   void loginUser() {
     if (_formKey.currentState!.validate()) {
       ref
           .read(loginViewModelProvider.notifier)
           .login(emailController.text.trim(), passwordController.text.trim());
+    }
+  }
+
+  /// Fingerprint login — authenticates then navigates directly to dashboard
+  Future<void> _loginWithBiometric() async {
+    setState(() => _isBiometricLoading = true);
+
+    final biometricService = ref.read(biometricServiceProvider);
+    final sessionService = ref.read(userSessionServiceProvider);
+
+    final result = await biometricService.authenticate(
+      reason: 'Use your fingerprint to sign in to NepaLink',
+    );
+
+    if (!mounted) return;
+    setState(() => _isBiometricLoading = false);
+
+    if (result.success) {
+      if (sessionService.isLoggedIn()) {
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No saved session. Please sign in with email & password first.',
+            ),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result.errorMessage ??
+                'Fingerprint not recognised. Please use password.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -88,6 +149,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             const SizedBox(height: 20),
 
+            // ── Email ──
             TextFormField(
               controller: emailController,
               keyboardType: TextInputType.emailAddress,
@@ -104,6 +166,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             const SizedBox(height: 14),
 
+            // ── Password ──
             TextFormField(
               controller: passwordController,
               obscureText: obscurePassword,
@@ -113,9 +176,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     obscurePassword ? Icons.visibility_off : Icons.visibility,
                   ),
                   onPressed: () {
-                    setState(() {
-                      obscurePassword = !obscurePassword;
-                    });
+                    setState(() => obscurePassword = !obscurePassword);
                   },
                 ),
               ),
@@ -131,6 +192,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             const SizedBox(height: 22),
 
+            // ── Sign In Button ──
             SizedBox(
               width: double.infinity,
               height: 48,
@@ -153,16 +215,74 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
 
+            // ── Biometric Login ──
+            if (_isBiometricAvailable) ...[
+              const SizedBox(height: 16),
+              Row(
+                children: const [
+                  Expanded(child: Divider(color: Colors.white54)),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Text("or", style: TextStyle(color: Colors.white70)),
+                  ),
+                  Expanded(child: Divider(color: Colors.white54)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: _isBiometricLoading ? null : _loginWithBiometric,
+                  child: _isBiometricLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFF3C7EEF),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(
+                              Icons.fingerprint_rounded,
+                              size: 28,
+                              color: Color(0xFF3C7EEF),
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              "Sign in with Fingerprint",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF3C7EEF),
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ],
+
             const SizedBox(height: 15),
 
             GestureDetector(
               onTap: () => Navigator.pushNamed(context, "/register"),
               child: RichText(
-                text: TextSpan(
-                  style: const TextStyle(fontSize: 13, color: Colors.black),
+                text: const TextSpan(
+                  style: TextStyle(fontSize: 13, color: Colors.black),
                   children: [
-                    const TextSpan(text: "Don't have an account? "),
-                    const TextSpan(
+                    TextSpan(text: "Don't have an account? "),
+                    TextSpan(
                       text: "Register",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,

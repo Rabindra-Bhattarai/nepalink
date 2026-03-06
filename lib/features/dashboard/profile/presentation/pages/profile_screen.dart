@@ -1,10 +1,9 @@
-// lib/features/dashboard/profile/presentation/pages/profile_screen.dart
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nepalink/core/providers/theme_provider.dart';
+import 'package:nepalink/core/services/biometric/biometric_service.dart';
 import 'package:nepalink/features/dashboard/profile/presentation/view_model/profile_view_model.dart';
 import 'package:nepalink/features/dashboard/profile/domain/entities/profile_entity.dart';
 
@@ -18,6 +17,11 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late ScaffoldMessengerState _messenger;
 
+  // ── Biometric state ──
+  bool _isBiometricAvailable = false;
+  bool _isBiometricEnabled = false;
+  bool _isBiometricLoading = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -30,6 +34,85 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     Future.microtask(
       () => ref.read(profileViewModelProvider.notifier).loadProfile(),
     );
+    _loadBiometricStatus();
+  }
+
+  Future<void> _loadBiometricStatus() async {
+    final biometricService = ref.read(biometricServiceProvider);
+    final isAvailable = await biometricService.isAvailable();
+    final isEnabled = await biometricService.isBiometricEnabled();
+    if (mounted) {
+      setState(() {
+        _isBiometricAvailable = isAvailable;
+        _isBiometricEnabled = isEnabled;
+      });
+    }
+  }
+
+  Future<void> _toggleBiometric(bool enable) async {
+    final biometricService = ref.read(biometricServiceProvider);
+
+    if (enable) {
+      setState(() => _isBiometricLoading = true);
+      final result = await biometricService.enableBiometric();
+      if (mounted) {
+        setState(() {
+          _isBiometricEnabled = result.success;
+          _isBiometricLoading = false;
+        });
+        if (result.success) {
+          _showSnack('Fingerprint login enabled successfully!');
+        } else {
+          // Show the specific error so user knows exactly what to do
+          _showSnack(
+            result.errorMessage ?? 'Fingerprint setup failed. Try again.',
+            isError: true,
+          );
+        }
+      }
+    } else {
+      // Disabling — no scan needed, just confirm via dialog
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Disable Fingerprint Login',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            'Are you sure you want to disable fingerprint login? You will need to use your email and password to sign in.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[600],
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Text('Disable'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        await biometricService.disableBiometric();
+        if (mounted) {
+          setState(() => _isBiometricEnabled = false);
+          _showSnack('Fingerprint login disabled.');
+        }
+      }
+    }
   }
 
   void _showSnack(String message, {bool isError = false}) {
@@ -187,7 +270,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           .read(profileViewModelProvider.notifier)
           .logout();
       if (success && mounted) {
-        // Navigate to login and clear all routes
         Navigator.of(
           context,
         ).pushNamedAndRemoveUntil('/login', (route) => false);
@@ -208,6 +290,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(profileViewModelProvider);
     final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
+    final isLightSensorEnabled = ref.watch(lightSensorEnabledProvider);
 
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -242,7 +325,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       padding: const EdgeInsets.only(bottom: 32),
       child: Column(
         children: [
-          // ── Header with avatar ──────────────────────────────────────────
+          // ── Header ──────────────────────────────────────────────────────
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -252,107 +335,174 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 end: Alignment.bottomRight,
               ),
             ),
-            padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
-            child: Column(
-              children: [
-                // Avatar
-                Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
+            child: SafeArea(
+              bottom: false,
+              child: Stack(
+                children: [
+                  // ── Logout button ──
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Tooltip(
+                      message: 'Log Out',
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _confirmLogout,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.35),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(
+                                  Icons.logout_rounded,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Logout',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // ── Avatar + name ──
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Stack(
+                            alignment: Alignment.bottomRight,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 3,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: CircleAvatar(
+                                  radius: 52,
+                                  backgroundColor: Colors.white,
+                                  backgroundImage: profile.imageUrl != null
+                                      ? NetworkImage(profile.imageUrl!)
+                                      : null,
+                                  child: profile.imageUrl == null
+                                      ? Text(
+                                          profile.name.isNotEmpty
+                                              ? profile.name[0].toUpperCase()
+                                              : '?',
+                                          style: TextStyle(
+                                            fontSize: 40,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.blue[600],
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: state.isUpdating
+                                    ? null
+                                    : _pickAndUploadImage,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.15),
+                                        blurRadius: 6,
+                                      ),
+                                    ],
+                                  ),
+                                  child: state.isUpdating
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Icon(
+                                          Icons.camera_alt_rounded,
+                                          size: 18,
+                                          color: Colors.blue[600],
+                                        ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            profile.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.25),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              profile.role.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      child: CircleAvatar(
-                        radius: 52,
-                        backgroundColor: Colors.white,
-                        backgroundImage: profile.imageUrl != null
-                            ? NetworkImage(profile.imageUrl!)
-                            : null,
-                        child: profile.imageUrl == null
-                            ? Text(
-                                profile.name.isNotEmpty
-                                    ? profile.name[0].toUpperCase()
-                                    : '?',
-                                style: TextStyle(
-                                  fontSize: 40,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue[600],
-                                ),
-                              )
-                            : null,
-                      ),
-                    ),
-                    // Camera button
-                    GestureDetector(
-                      onTap: state.isUpdating ? null : _pickAndUploadImage,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
-                              blurRadius: 6,
-                            ),
-                          ],
-                        ),
-                        child: state.isUpdating
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Icon(
-                                Icons.camera_alt_rounded,
-                                size: 18,
-                                color: Colors.blue[600],
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  profile.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    profile.role.toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -371,7 +521,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const SizedBox(height: 24),
                 _sectionTitle('Settings'),
                 const SizedBox(height: 12),
-                _settingsCard(isDark),
+                _settingsCard(isDark, isLightSensorEnabled),
 
                 const SizedBox(height: 24),
                 _sectionTitle('Account'),
@@ -418,7 +568,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _divider(),
           _infoRow(Icons.phone_rounded, 'Phone', profile.phone, Colors.green),
           _divider(),
-          // Edit button
           ListTile(
             onTap: () => _openEditDialog(profile),
             leading: Container(
@@ -447,7 +596,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _settingsCard(bool isDark) {
+  Widget _settingsCard(bool isDark, bool isLightSensorEnabled) {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
@@ -462,7 +611,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       child: Column(
         children: [
-          // Dark mode toggle
+          // ── Dark Mode ──
           ListTile(
             leading: Container(
               padding: const EdgeInsets.all(8),
@@ -491,7 +640,88 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
           _divider(),
-          // Notifications (placeholder)
+
+          // ── Auto Theme (Light Sensor) ──
+          ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.wb_sunny_rounded,
+                color: isLightSensorEnabled
+                    ? Colors.amber[700]
+                    : Colors.grey[400],
+                size: 20,
+              ),
+            ),
+            title: const Text(
+              'Auto Theme',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(
+              isLightSensorEnabled
+                  ? 'On — dark in low light, light in bright'
+                  : 'Off — uses manual dark mode setting',
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
+            ),
+            trailing: Switch.adaptive(
+              value: isLightSensorEnabled,
+              activeColor: Colors.amber[700],
+              onChanged: (_) =>
+                  ref.read(lightSensorEnabledProvider.notifier).toggle(),
+            ),
+          ),
+          _divider(),
+
+          // ── Fingerprint Login ──
+          if (_isBiometricAvailable) ...[
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: _isBiometricLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.green,
+                        ),
+                      )
+                    : Icon(
+                        Icons.fingerprint_rounded,
+                        color: _isBiometricEnabled
+                            ? Colors.green[600]
+                            : Colors.grey[400],
+                        size: 20,
+                      ),
+              ),
+              title: const Text(
+                'Fingerprint Login',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                _isBiometricEnabled
+                    ? 'Enabled — tap to disable'
+                    : 'Disabled — tap to set up',
+                style: TextStyle(color: Colors.grey[500], fontSize: 12),
+              ),
+              trailing: Switch.adaptive(
+                value: _isBiometricEnabled,
+                activeColor: Colors.green[600],
+                onChanged: _isBiometricLoading ? null : _toggleBiometric,
+              ),
+            ),
+            _divider(),
+          ],
+
+          // ── Notifications ──
           ListTile(
             leading: Container(
               padding: const EdgeInsets.all(8),
@@ -516,7 +746,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onTap: () {},
           ),
           _divider(),
-          // Privacy (placeholder)
+
+          // ── Privacy & Security ──
           ListTile(
             leading: Container(
               padding: const EdgeInsets.all(8),
@@ -560,7 +791,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       child: Column(
         children: [
-          // Member since
           if (profile.createdAt != null) ...[
             ListTile(
               leading: Container(
@@ -584,31 +814,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 style: TextStyle(color: Colors.grey[500], fontSize: 12),
               ),
             ),
-            _divider(),
           ],
-          // Logout
-          ListTile(
-            onTap: _confirmLogout,
-            leading: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                Icons.logout_rounded,
-                color: Colors.red[600],
-                size: 20,
-              ),
-            ),
-            title: Text(
-              'Log Out',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.red[600],
-              ),
-            ),
-          ),
         ],
       ),
     );
