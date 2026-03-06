@@ -26,9 +26,8 @@ class ApiClient {
       ),
     );
 
-    _dio.interceptors.add(_AuthInterceptor());
+    _dio.interceptors.add(AuthInterceptor());
 
-    // Auto retry on network failures
     _dio.interceptors.add(
       RetryInterceptor(
         dio: _dio,
@@ -39,7 +38,6 @@ class ApiClient {
           Duration(seconds: 3),
         ],
         retryEvaluator: (error, attempt) {
-          // Retry on connection errors and timeouts, not on 4xx/5xx
           return error.type == DioExceptionType.connectionTimeout ||
               error.type == DioExceptionType.sendTimeout ||
               error.type == DioExceptionType.receiveTimeout ||
@@ -100,6 +98,21 @@ class ApiClient {
     );
   }
 
+  // ✅ Added — used by notification mark-read endpoints
+  Future<Response> patch(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    return _dio.patch(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
+  }
+
   Future<Response> delete(
     String path, {
     dynamic data,
@@ -129,8 +142,8 @@ class ApiClient {
   }
 }
 
-class _AuthInterceptor extends Interceptor {
-  final _storage = const FlutterSecureStorage();
+class AuthInterceptor extends Interceptor {
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
   static const String _tokenKey = 'auth_token';
 
   @override
@@ -139,19 +152,17 @@ class _AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     final publicEndpoints = [ApiEndpoints.userLogin, ApiEndpoints.userSignup];
+    final isPublic = publicEndpoints.any(
+      (endpoint) => options.path.startsWith(endpoint),
+    );
 
-    final isPublicGet =
-        options.method == 'GET' &&
-        publicEndpoints.any((endpoint) => options.path.startsWith(endpoint));
-
-    final isAuthEndpoint =
-        options.path == ApiEndpoints.userLogin ||
-        options.path == ApiEndpoints.userSignup;
-
-    if (!isPublicGet && !isAuthEndpoint) {
+    if (!isPublic) {
       final token = await _storage.read(key: _tokenKey);
-      if (token != null) {
+      if (token != null && token.isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $token';
+        if (kDebugMode) {
+          print("AuthInterceptor attaching token: $token");
+        }
       }
     }
 

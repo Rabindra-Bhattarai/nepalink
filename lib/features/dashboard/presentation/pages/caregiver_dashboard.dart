@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:nepalink/features/button_screen/home_screen.dart';
-import 'package:nepalink/features/button_screen/task_screen.dart';
-import 'package:nepalink/features/button_screen/caregiver_screen.dart';
-import 'package:nepalink/features/button_screen/location_screen.dart';
+import 'package:nepalink/features/button_screen/task_page.dart';
+import 'package:nepalink/features/button_screen/chat_page.dart';
+import 'package:nepalink/features/button_screen/booking_page.dart';
 import 'package:nepalink/features/dashboard/presentation/pages/profile_screen.dart';
+import 'package:nepalink/features/dashboard/notification/presentation/widgets/notification_bell.dart'; // ✅ added
 
 class CaregiverDashboard extends StatefulWidget {
   const CaregiverDashboard({super.key});
@@ -17,15 +18,15 @@ class _CaregiverDashboardState extends State<CaregiverDashboard> {
 
   List<Widget> lstBottomScreen = [
     const HomeScreen(),
-    const TaskScreen(),
-    const LocationScreen(),
-    const CaregiverScreen(),
+    const TaskPage(),
+    const BookingPage(),
+    const ChatPage(),
     const ProfileScreen(),
   ];
 
   void _refreshPage() {
     setState(() {
-      _selectedIndex = 0; // reset to Home tab
+      _selectedIndex = 0;
     });
   }
 
@@ -57,10 +58,9 @@ class _CaregiverDashboardState extends State<CaregiverDashboard> {
             icon: const Icon(Icons.settings, color: Colors.white),
             onPressed: () {},
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {},
-          ),
+          // Replaced plain IconButton with NotificationBell
+          // Shows red badge with unread count automatically
+          const NotificationBell(),
         ],
       ),
       body: lstBottomScreen[_selectedIndex],
@@ -68,9 +68,12 @@ class _CaregiverDashboardState extends State<CaregiverDashboard> {
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Task'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'location'),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Caregiver'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book_online),
+            label: 'Bookings',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Tasks'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         backgroundColor: Colors.blue,
