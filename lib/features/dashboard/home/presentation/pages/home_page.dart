@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:proximity_sensor/proximity_sensor.dart';
 import 'package:nepalink/features/dashboard/home/presentation/state/home_state.dart';
 import 'package:nepalink/features/dashboard/home/presentation/view_model/home_view_model.dart';
 import 'package:nepalink/features/dashboard/home/presentation/widgets/activity_card.dart';
@@ -13,12 +16,58 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  // ── Proximity sensor ──
+  StreamSubscription<dynamic>? _proximitySub;
+  bool _isRefreshing = false; // prevent rapid double-trigger
+  bool _showRefreshBadge = false; // brief visual feedback
+
   @override
   void initState() {
     super.initState();
     Future.microtask(
       () => ref.read(homeViewModelProvider.notifier).loadActivities(),
     );
+    _startProximitySensor();
+  }
+
+  // ── Listen to proximity events ──
+  void _startProximitySensor() {
+    try {
+      _proximitySub = ProximitySensor.events.listen((int event) {
+        // event > 0 means NEAR
+        if (event > 0 && !_isRefreshing) {
+          _proximityRefresh();
+        }
+      });
+    } catch (e) {
+      debugPrint('Proximity sensor not available: $e');
+    }
+  }
+
+  // ── Refresh triggered by proximity ──
+  Future<void> _proximityRefresh() async {
+    _isRefreshing = true;
+
+    // Light haptic + show badge
+    await HapticFeedback.lightImpact();
+    if (mounted) setState(() => _showRefreshBadge = true);
+
+    // Load fresh data
+    await ref.read(homeViewModelProvider.notifier).loadActivities();
+
+    if (mounted) {
+      setState(() => _showRefreshBadge = false);
+    }
+
+    // Cooldown — prevent re-trigger for 3 seconds
+    await Future.delayed(const Duration(seconds: 3));
+    _isRefreshing = false;
+  }
+
+  @override
+  void dispose() {
+    _proximitySub?.cancel();
+    super.dispose();
   }
 
   @override
@@ -27,27 +76,86 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F7FB),
-      body: RefreshIndicator(
-        color: const Color(0xFF2A9D7A),
-        onRefresh: () =>
-            ref.read(homeViewModelProvider.notifier).loadActivities(),
-        child: CustomScrollView(
-          slivers: [
-            _buildAppBar(),
-            if (state.status == HomeStatus.loading)
-              const SliverFillRemaining(
-                child: Center(
-                  child: CircularProgressIndicator(color: Color(0xFF2A9D7A)),
+      body: Stack(
+        children: [
+          RefreshIndicator(
+            color: const Color(0xFF2A9D7A),
+            onRefresh: () =>
+                ref.read(homeViewModelProvider.notifier).loadActivities(),
+            child: CustomScrollView(
+              slivers: [
+                _buildAppBar(),
+                if (state.status == HomeStatus.loading)
+                  const SliverFillRemaining(
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF2A9D7A),
+                      ),
+                    ),
+                  )
+                else if (state.status == HomeStatus.failure)
+                  SliverFillRemaining(child: _buildError(state.errorMessage))
+                else if (state.activities.isEmpty)
+                  const SliverFillRemaining(child: _EmptyState())
+                else
+                  _buildContent(state),
+              ],
+            ),
+          ),
+
+          // ── Proximity refresh badge — top center toast ──
+          if (_showRefreshBadge)
+            Positioned(
+              top: 16,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: AnimatedOpacity(
+                  opacity: _showRefreshBadge ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2A9D7A),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF2A9D7A).withOpacity(0.35),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Refreshing...',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              )
-            else if (state.status == HomeStatus.failure)
-              SliverFillRemaining(child: _buildError(state.errorMessage))
-            else if (state.activities.isEmpty)
-              const SliverFillRemaining(child: _EmptyState())
-            else
-              _buildContent(state),
-          ],
-        ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -97,21 +205,25 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     ],
                   ),
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF2A9D7A), Color(0xFF1E7D61)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  // ── Proximity sensor indicator ──
+                  Tooltip(
+                    message: 'Bring phone close to refresh',
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2A9D7A), Color(0xFF1E7D61)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(13),
                       ),
-                      borderRadius: BorderRadius.circular(13),
-                    ),
-                    child: const Icon(
-                      Icons.medical_services_outlined,
-                      color: Colors.white,
-                      size: 20,
+                      child: const Icon(
+                        Icons.sensors_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ],
@@ -130,30 +242,20 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  // Extracted into its own method so the analyzer resolves imported widgets
   List<Widget> _buildItems(HomeState state) {
     return [
-      // ── Summary Stats ──
       _SummaryRow(state: state),
       const SizedBox(height: 16),
-
-      // ── Vitals Line Chart ──
       VitalsLineChart(activities: state.lastSevenDays),
       const SizedBox(height: 16),
-
-      // ── Activity Status Pie Chart ──
       ActivityStatusChart(
         completed: state.completedCount,
         pending: state.pendingCount,
         cancelled: state.cancelledCount,
       ),
       const SizedBox(height: 16),
-
-      // ── Daily Care Summary ──
       DailyCareSummary(activities: state.activities),
       const SizedBox(height: 16),
-
-      // ── Recent Activities Header ──
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -172,10 +274,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         ],
       ),
       const SizedBox(height: 12),
-
-      // ── Activity Cards ──
       ...state.sorted.map((a) => ActivityCard(activity: a)),
-
       const SizedBox(height: 20),
     ];
   }
