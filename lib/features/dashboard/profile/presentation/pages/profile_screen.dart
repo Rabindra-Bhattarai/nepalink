@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:nepalink/core/providers/theme_provider.dart';
 import 'package:nepalink/core/services/biometric/biometric_service.dart';
 import 'package:nepalink/features/dashboard/profile/presentation/view_model/profile_view_model.dart';
@@ -63,7 +64,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         if (result.success) {
           _showSnack('Fingerprint login enabled successfully!');
         } else {
-          // Show the specific error so user knows exactly what to do
           _showSnack(
             result.errorMessage ?? 'Fingerprint setup failed. Try again.',
             isError: true,
@@ -71,7 +71,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         }
       }
     } else {
-      // Disabling — no scan needed, just confirm via dialog
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -127,7 +126,111 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  // ── Permission helper ────────────────────────────────────────────────────
+  /// Returns true if we have (or just obtained) the media/storage permission.
+  /// On Android 13+ uses READ_MEDIA_IMAGES; on older versions READ_EXTERNAL_STORAGE.
+  /// If permanently denied, opens app settings so the user can fix it manually.
+  Future<bool> _requestPhotoPermission() async {
+    // Android 13+ uses granular media permissions
+    final Permission permission = Platform.isAndroid
+        ? (await _isAndroid13OrAbove()
+              ? Permission
+                    .photos // maps to READ_MEDIA_IMAGES on 13+
+              : Permission.storage) // READ_EXTERNAL_STORAGE on <13
+        : Permission.photos; // iOS Photos
+
+    final status = await permission.status;
+
+    // Already granted — nothing to do
+    if (status.isGranted) return true;
+
+    // Not yet asked or previously denied (but not permanently) — ask now
+    if (status.isDenied) {
+      final result = await permission.request();
+      if (result.isGranted) return true;
+
+      // User denied — show a gentle explanation snackbar
+      if (mounted) {
+        _showSnack(
+          'Photo access is needed to update your profile picture.',
+          isError: true,
+        );
+      }
+      return false;
+    }
+
+    // Permanently denied — the only way forward is app settings
+    if (status.isPermanentlyDenied) {
+      if (mounted) await _showGoToSettingsDialog();
+      return false;
+    }
+
+    return false;
+  }
+
+  /// Shows a dialog explaining why the permission is needed and
+  /// offers a direct "Open Settings" button.
+  Future<void> _showGoToSettingsDialog() async {
+    final goToSettings = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Photo Permission Required',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'You have permanently denied photo access.\n\n'
+          'To update your profile picture, please enable "Photos" or '
+          '"Storage" permission in your device settings.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.pop(ctx, true),
+            icon: const Icon(Icons.settings_rounded, size: 18),
+            label: const Text('Open Settings'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[600],
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (goToSettings == true) {
+      await openAppSettings(); // from permission_handler
+    }
+  }
+
+  /// Detects Android 13+ (API 33) by checking if READ_MEDIA_IMAGES exists.
+  Future<bool> _isAndroid13OrAbove() async {
+    // permission_handler exposes .photos on Android 13+ as READ_MEDIA_IMAGES.
+    // On older versions it resolves to READ_EXTERNAL_STORAGE.
+    // A simple way to check: if photos permission status is not restricted
+    // it means the OS understands READ_MEDIA_IMAGES (Android 13+).
+    try {
+      final s = await Permission.photos.status;
+      return !s.isRestricted; // restricted only appears on iOS, not Android
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // ── Photo upload ─────────────────────────────────────────────────────────
   Future<void> _pickAndUploadImage() async {
+    // 1. Request permission first
+    final hasPermission = await _requestPhotoPermission();
+    if (!hasPermission) return;
+
+    // 2. Permission granted — open gallery
     final picker = ImagePicker();
     final picked = await picker.pickImage(
       source: ImageSource.gallery,
@@ -136,6 +239,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
     if (picked == null) return;
 
+    // 3. Upload
     final success = await ref
         .read(profileViewModelProvider.notifier)
         .uploadProfilePicture(File(picked.path));
@@ -438,7 +542,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               GestureDetector(
                                 onTap: state.isUpdating
                                     ? null
-                                    : _pickAndUploadImage,
+                                    : _pickAndUploadImage, // permission check is inside
                                 child: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
