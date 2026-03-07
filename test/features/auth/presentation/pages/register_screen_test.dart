@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockito/annotations.dart';
 import 'package:nepalink/features/auth/presentation/pages/register_screen.dart';
 import 'package:nepalink/features/auth/presentation/view_model/register_viewmodel.dart';
-import 'package:nepalink/features/auth/presentation/state/register_state.dart';
 import 'package:nepalink/features/auth/domain/usecases/register_usecase.dart';
 
 @GenerateMocks([RegisterUsecase])
