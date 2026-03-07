@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:dartz/dartz.dart';
-import 'package:nepalink/core/errors/failures.dart';
 import 'package:nepalink/core/services/storage/user_session_service.dart';
 import 'package:nepalink/features/dashboard/profile/domain/entities/profile_entity.dart';
 import 'package:nepalink/features/dashboard/profile/domain/usecases/profile_usecases.dart';
