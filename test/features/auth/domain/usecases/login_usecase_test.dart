@@ -1,87 +1,68 @@
-import 'dart:io';
-
-import 'package:flutter_test/flutter_test.dart';
 import 'package:dartz/dartz.dart';
-import 'package:nepalink/features/auth/domain/usecases/login_usecase.dart';
-import 'package:nepalink/features/auth/domain/entities/user_entity.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 import 'package:nepalink/core/errors/failures.dart';
+import 'package:nepalink/features/auth/domain/entities/user_entity.dart';
 import 'package:nepalink/features/auth/domain/repositories/auth_repository.dart';
+import 'package:nepalink/features/auth/domain/usecases/login_usecase.dart';
 
-// A simple concrete Failure class for testing
-class SimpleFailure extends Failure {
-  SimpleFailure(String message) : super(message);
-}
-
-// Simple fake repository
-class FakeAuthRepository implements IAuthRepository {
-  @override
-  Future<Either<Failure, UserEntity>> login(
-    String email,
-    String password,
-  ) async {
-    if (email == "test@example.com" && password == "123456") {
-      return Right(
-        UserEntity(
-          userid: "1",
-          email: email,
-          name: '',
-          phone: '',
-          password: '',
-        ),
-      );
-    } else {
-      return Left(SimpleFailure("Invalid credentials"));
-    }
-  }
-
-  @override
-  Future<Either<Failure, UserEntity?>> getCurrentUser() {
-    // TODO: implement getCurrentUser
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<Either<Failure, bool>> logout() {
-    // TODO: implement logout
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<Either<Failure, bool>> register(UserEntity user) {
-    // TODO: implement register
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<Either<Failure, UserEntity>> uploadProfileImage(
-    String userId,
-    File photo,
-  ) {
-    // TODO: implement uploadProfileImage
-    throw UnimplementedError();
-  }
-}
+@GenerateMocks([IAuthRepository])
+import 'login_usecase_test.mocks.dart';
 
 void main() {
   late LoginUsecase loginUsecase;
+  late MockIAuthRepository mockAuthRepository;
+
+  const tParams = LoginParams(
+    email: 'kiran@gmail.com',
+    password: 'password123',
+  );
+
+  const tUserEntity = UserEntity(
+    userid: 'user-123',
+    name: 'Kiran Rana',
+    email: 'kiran@gmail.com',
+    phone: '+9779876543210',
+    password: 'password123',
+    profilePic: null,
+    token: 'jwt-token-abc',
+    role: 'nurse',
+  );
 
   setUp(() {
-    loginUsecase = LoginUsecase(authRepository: FakeAuthRepository());
+    mockAuthRepository = MockIAuthRepository();
+    loginUsecase = LoginUsecase(authRepository: mockAuthRepository);
   });
 
-  test("Login succeeds with correct email and password", () async {
-    final result = await loginUsecase.call(
-      const LoginParams(email: "test@example.com", password: "123456"),
-    );
+  group('LoginUsecase', () {
+    test('returns UserEntity when login is successful', () async {
+      when(
+        mockAuthRepository.login(any, any),
+      ).thenAnswer((_) async => const Right(tUserEntity));
 
-    expect(result.isRight(), true);
-  });
+      final result = await loginUsecase(tParams);
 
-  test("Login fails with wrong email or password", () async {
-    final result = await loginUsecase.call(
-      const LoginParams(email: "wrong@example.com", password: "wrong"),
-    );
+      expect(result, const Right(tUserEntity));
+      verify(
+        mockAuthRepository.login('kiran@gmail.com', 'password123'),
+      ).called(1);
+      verifyNoMoreInteractions(mockAuthRepository);
+    });
 
-    expect(result.isLeft(), true);
+    test('returns ApiFailure when credentials are wrong', () async {
+      when(mockAuthRepository.login(any, any)).thenAnswer(
+        (_) async =>
+            const Left(ApiFailure(message: 'Invalid email or password')),
+      );
+
+      final result = await loginUsecase(tParams);
+
+      expect(
+        result,
+        const Left(ApiFailure(message: 'Invalid email or password')),
+      );
+      verify(mockAuthRepository.login(any, any)).called(1);
+    });
   });
 }

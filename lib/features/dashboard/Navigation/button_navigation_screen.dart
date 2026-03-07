@@ -165,20 +165,16 @@ class _ButtonNavigationScreenState
   void _startShakeDetector() {
     _shakeDetector = ShakeDetector.autoStart(
       onPhoneShake: () async {
-        // Toggle theme
         await ref.read(themeModeProvider.notifier).toggle();
-
-        // Haptic + show toast
         await HapticFeedback.heavyImpact();
         if (!mounted) return;
-
         final isDark = ref.read(themeModeProvider) == ThemeMode.dark;
         _showThemeToast(isDark);
       },
-      minimumShakeCount: 2, // shakes needed to trigger
-      shakeSlopTimeMS: 500, // ms between shake counts
-      shakeCountResetTime: 3000, // reset count after 3s
-      shakeThresholdGravity: 2.7, // sensitivity (lower = easier to trigger)
+      minimumShakeCount: 2,
+      shakeSlopTimeMS: 500,
+      shakeCountResetTime: 3000,
+      shakeThresholdGravity: 2.7,
     );
   }
 
@@ -224,42 +220,12 @@ class _ButtonNavigationScreenState
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue.shade400, Colors.purple.shade400],
-                ),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.local_hospital_rounded,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Nepalink',
-              style: TextStyle(
-                color: Color(0xFF2C3E50),
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ],
+        title: Image.asset(
+          'assets/images/nepalink.png',
+          height: 46,
+          fit: BoxFit.contain,
         ),
-        actions: [const NotificationBell(), const SizedBox(width: 8)],
+        actions: [const NotificationBell(), const SizedBox(width: 12)],
       ),
       body: lstBottomScreen[_selectedIndex],
       extendBody: true,

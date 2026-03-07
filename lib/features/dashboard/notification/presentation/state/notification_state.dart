@@ -1,5 +1,3 @@
-// lib/features/dashboard/notification/presentation/state/notification_state.dart
-
 import 'package:equatable/equatable.dart';
 import 'package:nepalink/features/dashboard/notification/domain/entities/notification_entity.dart';
 
